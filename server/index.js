@@ -1,0 +1,77 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const connectDB = require('./config/db');
+
+// Import routes
+const clientRoutes = require('./routes/clients');
+const billingRoutes = require('./routes/billing');
+const settingsRoutes = require('./routes/settings');
+
+// Import models for initialization
+const Settings = require('./models/Settings');
+
+const app = express();
+
+// Connect to MongoDB
+connectDB();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Request logging middleware (development)
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    next();
+  });
+}
+
+// API Routes
+app.use('/api/clients', clientRoutes);
+app.use('/api/billing', billingRoutes);
+app.use('/api/settings', settingsRoutes);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Initialize default settings on startup
+const initializeApp = async () => {
+  try {
+    await Settings.initializeDefaults();
+    console.log('Default settings initialized');
+  } catch (error) {
+    console.error('Error initializing settings:', error);
+  }
+};
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err.stack);
+  res.status(500).json({ 
+    message: 'Something went wrong!', 
+    error: process.env.NODE_ENV === 'production' ? {} : err.message 
+  });
+});
+
+// Handle 404
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
+const PORT = process.env.PORT || 5001;
+
+app.listen(PORT, async () => {
+  console.log(`Server running on port ${PORT}`);
+  await initializeApp();
+});
+
+module.exports = app;
