@@ -1,0 +1,1298 @@
+[
+  {
+    "clientId": "MRM-1",
+    "name": "Aashish Rego (Astral music )",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-2",
+    "name": "Aayush Vivek Jain",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-3",
+    "name": "Abbas Fakirmohamed Tyerwala",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-4",
+    "name": "Abhijeet Hegdepatil (Kk)",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-5",
+    "name": "Adil Behram Gandevia (Adil Prashant)",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-6",
+    "name": "Aditya A Live",
+    "type": "Publisher",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-7",
+    "name": "Aditya Aggarwal",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-8",
+    "name": "Aditya Music India Private Limited",
+    "type": "Publisher",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-9",
+    "name": "Ajay Gogavale (Ajay Atul)",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-10",
+    "name": "Akshayraje Shinde (Akshay Pandurang Shinde)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-11",
+    "name": "Alphons Joseph",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-12",
+    "name": "Amit Anil Biswas",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-13",
+    "name": "Anand Chitragupta Shrivastava",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-14",
+    "name": "Anand Seshadri",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-15",
+    "name": "Anantha Subramani Hariharan (Hariharan)",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-16",
+    "name": "Anil Biswas(Amit Anil Biswas Legal Heir)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-17",
+    "name": "Anshul Mathur",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-18",
+    "name": "Anuj Damodar Danait",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-19",
+    "name": "Anurag Saikia",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-20",
+    "name": "Apurva Nisshad",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-21",
+    "name": "Arabinda Neog",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-22",
+    "name": "Arjun (U Arjun)",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-23",
+    "name": "Arkadeep Karmakar",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-24",
+    "name": "Arpit Mehta",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-25",
+    "name": "Artium (JUJUBABY )",
+    "type": "Publisher",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-26",
+    "name": "Arun Alat",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-27",
+    "name": "Aseem Bhatnagar",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-28",
+    "name": "Ashish Kumar Das",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-29",
+    "name": "Ashmit Singh",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-30",
+    "name": "Ashwin Srinivasan",
+    "type": "Composer",
+    "fee": 0.17
+  },
+  {
+    "clientId": "MRM-31",
+    "name": "Atharv Music (Ashwin Srinivasan)",
+    "type": "Publisher",
+    "fee": 0.17
+  },
+  {
+    "clientId": "MRM-32",
+    "name": "Atul Gogavale (Ajay Atul)",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-33",
+    "name": "Bappa Bappi Lahiri",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-34",
+    "name": "Bappi Lahiri (legal head chitrani lahiri)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-35",
+    "name": "Bashir Badr",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-36",
+    "name": "Ravi Kumar Bhaskarabhatla",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-37",
+    "name": "Bhupinder Singh",
+    "type": "Singer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-38",
+    "name": "Bickram Ghosh",
+    "type": "Composer",
+    "fee": 0.2
+  },
+  {
+    "clientId": "MRM-39",
+    "name": "Binod Ghimire",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-40",
+    "name": "Deepak Pandit",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-41",
+    "name": "Devendra Bhome",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-42",
+    "name": "Devendra Pal Singh",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-43",
+    "name": "Dhanya Suresh",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-44",
+    "name": "Dharmesh Balwant Mistry",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-45",
+    "name": "Divya Mahesh Limbasia",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-46",
+    "name": "Dony Hazarika",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-47",
+    "name": "Elvis Valentine",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-48",
+    "name": "Emil Mohammed",
+    "type": "Composer",
+    "fee": 0.2
+  },
+  {
+    "clientId": "MRM-49",
+    "name": "Gagandeep Singh (Beat Minister)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-50",
+    "name": "Ghantasala Venkateshwara Rao",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-51",
+    "name": "Gopi Sundar",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-52",
+    "name": "Indraadip Dasgupta",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-53",
+    "name": "Ivy Roy",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-54",
+    "name": "J.S. Maris Vijay",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-55",
+    "name": "Jaskirat Singh",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-56",
+    "name": "Javed Akhtar",
+    "type": "Lyricist",
+    "fee": 0.05
+  },
+  {
+    "clientId": "MRM-57",
+    "name": "Jehangir Nosherwan Jehangir (The Salvage Audio Collective)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-58",
+    "name": "Joel Crasto",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-59",
+    "name": "Joffi Tharakan",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-60",
+    "name": "Justin Yesudas (Justin - Uday)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-61",
+    "name": "Jyothish T K",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-62",
+    "name": "Jyoti Jha",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-63",
+    "name": "Kalim Shaikh",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-64",
+    "name": "Kalyani Malik Koduri (Kalyani Malik)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-65",
+    "name": "Kavita Subramaniam",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-66",
+    "name": "Kevin Roy",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-67",
+    "name": "Khader Mohideen B M Deen (Kadhalmathi)",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-68",
+    "name": "Laxmikant Shantaram Kudalkar (Legal Heir Rajshree))",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-69",
+    "name": "Leslie Lewis",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-70",
+    "name": "M L Ousephachan (Ouseppachan)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-71",
+    "name": "Madhavapeddi Suresh Chandra",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-72",
+    "name": "Madhushree Badaltjawdharie (Madhushree Bhattacharji)",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-73",
+    "name": "Manan Nitin Shah",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-74",
+    "name": "Manish Kumar Tipu (Manish J Tipu)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-75",
+    "name": "Manu Manjith",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-76",
+    "name": "Mark Kandukuri Robin",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-77",
+    "name": "Megdeep Bose",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-78",
+    "name": "Meka Sai Madhukar Aparao (Sai Madhukar)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-79",
+    "name": "Milind Chitragupta Shrivastava",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-80",
+    "name": "Minu Puri",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-81",
+    "name": "Mitali Bhupinder Singh",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-82",
+    "name": "Mithun Naresh Sharma (Mithoon)",
+    "type": "Singer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-83",
+    "name": "Mohammed Vakil",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-84",
+    "name": "Mukund Namdev Bhalerao",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-85",
+    "name": "Nakash Aziz",
+    "type": "Singer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-86",
+    "name": "Nakul Deshmukh (Sarthak Nakul)",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-87",
+    "name": "Naresh Ramprasad Sharma",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-88",
+    "name": "Neeraj Prabhakar",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-89",
+    "name": "Nidhees Babu G",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-90",
+    "name": "Nilotpal Bora",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-91",
+    "name": "Nirmal Dineshchandra Pandya",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-92",
+    "name": "Nishant Pandey",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-93",
+    "name": "Nitin Pandurang Ugalmugale",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-94",
+    "name": "Padmanabh Balkrishna Gaikwad (Padmanabh Gaikwad)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-95",
+    "name": "Pandit Jasraj",
+    "type": "Singer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-96",
+    "name": "Paras Nath",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-97",
+    "name": "Paresh Anilkumar Shah",
+    "type": "Lyricist",
+    "fee": 0.27
+  },
+  {
+    "clientId": "MRM-98",
+    "name": "Poornachandra Tejaswi S V",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-99",
+    "name": "Prakash - Viraj (Prakash Vasant Gaikwad)",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-100",
+    "name": "Prakash - Viraj (Viraj Devdas Sawant)",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-101",
+    "name": "Prasad Prabhakar Sashte",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-102",
+    "name": "Prashant Mangalampalli (Adil Prashant)",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-103",
+    "name": "Protijyoti Ghosh",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-104",
+    "name": "Puneet Dixit",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-105",
+    "name": "Pyarelal Sharma",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-106",
+    "name": "Raj Kamal Bharti (Legal Heir Surya Kamal)",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-107",
+    "name": "Raj Sen",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-108",
+    "name": "Raja Pandey",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-109",
+    "name": "Rajiv Bhatt",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-110",
+    "name": "Rakendu Mouli Vennelakanti",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-111",
+    "name": "Rakesh Ganesh Chaurasia",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-112",
+    "name": "Ram Shanker Agnihotri",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-113",
+    "name": "Reji Abraham",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-114",
+    "name": "Rekha Bhardwaj",
+    "type": "Singer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-115",
+    "name": "Ripul Sharma",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-116",
+    "name": "Rishab Sharma",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-117",
+    "name": "Ritesh Gujrati",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-118",
+    "name": "Rohan Shyam Ramanna (The Salvage Audio Collective)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-119",
+    "name": "Rohit Sharma (SWARA STUDIO)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-120",
+    "name": "S Attavur Rahim (Rahman)",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-121",
+    "name": "S Rafeeq Ahamed",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-122",
+    "name": "Sabuj Mukherjee",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-123",
+    "name": "Sachin Kayth",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-124",
+    "name": "Sahithi Cherukupalli",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-125",
+    "name": "Salim Merchant (Salim-Sulaiman)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-126",
+    "name": "Samhita Debnath (Soumee Sailsh)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-127",
+    "name": "Samir Ramesh Phaterpekar",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-128",
+    "name": "Sandeep Saxena",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-129",
+    "name": "Sandeep Singh (Toofan Singh)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-130",
+    "name": "Sangeet Haldipur",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-131",
+    "name": "Sanjeev Rajender Kumar (Sanj V)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-132",
+    "name": "Santhosh Kumar K (Santhosh Varma)",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-133",
+    "name": "Sargam Jassu",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-134",
+    "name": "Sarthak Sharma (Sarthak Nakul)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-135",
+    "name": "Satti Venkat Krishna Reddy (S V Krishna Reddy)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-136",
+    "name": "Saurabh Kalsi",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-137",
+    "name": "Shaan Music",
+    "type": "Publisher",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-138",
+    "name": "Shaarangdev Pandit",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-139",
+    "name": "Shankar Autade",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-140",
+    "name": "Shantanu Mukherji",
+    "type": "Singer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-141",
+    "name": "Shivam Sen Gupta",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-142",
+    "name": "Shree Krishna International (Sunneel Darshan)",
+    "type": "Publisher",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-143",
+    "name": "Shruti Virendrakumar Pathak",
+    "type": "Singer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-144",
+    "name": "Shweta Raj",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-145",
+    "name": "Siddharth Haldipur",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-146",
+    "name": "Siddharth Mahadevan",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-147",
+    "name": "Sijumon K R",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-148",
+    "name": "Sohin Satish Merchant (Bittu Merchant)",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-149",
+    "name": "Somesh Kumar Mathur",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-150",
+    "name": "Somesh Saha",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-151",
+    "name": "Soumil Shringarpure",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-152",
+    "name": "Sourav Sarkar (Joy Sarkar)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-153",
+    "name": "Souvyk Chakraborty",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-154",
+    "name": "Srinivasan Doraiswamy",
+    "type": "Singer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-155",
+    "name": "Suddala Ashok Teja",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-156",
+    "name": "Sujay Nandi (Lenin Nandi)",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-157",
+    "name": "Sulaiman Merchant (Salim-Sulaiman)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-158",
+    "name": "Suneel Darshan",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-159",
+    "name": "Suneeta Rao",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-160",
+    "name": "Surya Raj Kamal",
+    "type": "Lyricist",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-161",
+    "name": "SVF Entertainment Private Limited",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-162",
+    "name": "Sweetbeats Productions Pvt. Ltd",
+    "type": "Publisher",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-163",
+    "name": "Tanishq Kaur",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-164",
+    "name": "The Malayala Manorama Co Pvt Ltd (Manorama Music)",
+    "type": "Publisher",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-165",
+    "name": "Turaab Jafri",
+    "type": "Singer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-166",
+    "name": "U L V Pradyothan (Leelamanusha Uppaladhadiyam)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-167",
+    "name": "Udaykumar Vyasrao Ninjoor (Justin - Uday)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-168",
+    "name": "Udbhav Ojha",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-169",
+    "name": "Ujjwal Kashyap",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-170",
+    "name": "Ultra Media Music",
+    "type": "Publisher",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-171",
+    "name": "Umami Music (Kalyani Malik Koduri Music Company)",
+    "type": "Publisher",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-172",
+    "name": "Uroovaak Uttank Vora",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-173",
+    "name": "Utpal Biswas (Amit Anil Biswas (Legal Heir)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-174",
+    "name": "Uttank Vora",
+    "type": "Composer",
+    "fee": 0.25
+  },
+  {
+    "clientId": "MRM-175",
+    "name": "Vaisakh Sugunan (V Vaisakh)",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-176",
+    "name": "Vanraj Bhatia",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-177",
+    "name": "Vennelakanti Subbu Rajeswara Prasad",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-178",
+    "name": "Vijay Prakash (Vijayaprakash Ramasesha)",
+    "type": "Singer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-179",
+    "name": "Vinayak S (Vinayak Sasikumar)",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-180",
+    "name": "Vipin Kumar (Vipin Heero)",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-181",
+    "name": "Viraj Rajendra Saxena (The Salvage Audio Collective)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-182",
+    "name": "Vishal Agarwala",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-183",
+    "name": "Vishal Khurana",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-184",
+    "name": "Vishesh Films - 3 Company",
+    "type": "Publisher",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-185",
+    "name": "Yanamandra Venkata Subramanyam (Mani Sharma)",
+    "type": "Composer",
+    "fee": 0.07
+  },
+  {
+    "clientId": "MRM-186",
+    "name": "Zoya Akhtar",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-187",
+    "name": "Zubin Balaporia",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-188",
+    "name": "Gulzar",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-189",
+    "name": "Vishal Bharadwaaj",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-190",
+    "name": "Vishal Dadlani (Vishal-Shekhar)",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-191",
+    "name": "Shekhar Hasmukh Ravjiani (Vishal-Shekhar)",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-192",
+    "name": "Aloyisuis Peter Mendonsa (Shankar-Ehsaan-Loy)",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-193",
+    "name": "Ehsaan Noorani (Shankar-Ehsaan-Loy)",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-194",
+    "name": "Shankar Mahadevan (Shankar-Ehsaan-Loy)",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-195",
+    "name": "Joshua Rajinder Singh Panesar (Alias Joshua Singh)",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-196",
+    "name": "Kangabeat Entertainment Pvt. Ltd.",
+    "type": "Publisher",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-197",
+    "name": "Rachel Productions",
+    "type": "Publisher",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-198",
+    "name": "Rachel Rajinder Singh Panesar",
+    "type": "Lyricist",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-199",
+    "name": "Rajinder Singh Panesar (Raju Singh)",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-200",
+    "name": "Samraj Music Rights Management Pvt. Ltd.",
+    "type": "Publisher",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-201",
+    "name": "Surender Sodhi",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-202",
+    "name": "Monali Thakur",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-203",
+    "name": "Shweta Raj",
+    "type": "Lyricist",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-204",
+    "name": "Rhiti Tiwari",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-205",
+    "name": "Munna Dhiman",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-206",
+    "name": "Dilip Bose",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-207",
+    "name": "Pooja Gaitonde (Pooja Charan Gaitonde)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-208",
+    "name": "Sanjay Sompura (Sanjay Lalshankar Sompura)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-209",
+    "name": "Excel Entertainment",
+    "type": "Composer",
+    "fee": 0.07
+  },
+  {
+    "clientId": "MRM-210",
+    "name": "Dharma Productions",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-211",
+    "name": "Gautam Deb",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-212",
+    "name": "Revant Shergill",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-213",
+    "name": "Shubham Paresh Shah",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-214",
+    "name": "Charanjit Singh Panesar",
+    "type": "Composer",
+    "fee": 0.1
+  },
+  {
+    "clientId": "MRM-215",
+    "name": "Naffriya Sukhjit Singh (Swarjit Singh)",
+    "type": "Composer",
+    "fee": 0.15
+  },
+  {
+    "clientId": "MRM-216",
+    "name": "Prithvi Gandharv (Pradeep Ashok Gandharva)",
+    "type": "Composer",
+    "fee": 0.15
+  }
+]
