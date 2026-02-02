@@ -114,7 +114,7 @@ function AddClientModal({ onClose }) {
 
 // Remove Client Modal
 function RemoveClientModal({ onClose }) {
-  const { clients, removeClient, showToast } = useApp();
+  const { clients, removeClient } = useApp();
   const [loading, setLoading] = useState(null);
 
   const handleRemove = async (clientId) => {
@@ -193,7 +193,7 @@ function RemoveClientModal({ onClose }) {
 
 // Settings Modal
 function SettingsModal({ onClose }) {
-  const { settings, updateFinancialYear, updateExchangeRate, showToast } = useApp();
+  const { settings, updateFinancialYear, updateExchangeRate } = useApp();
   const [fyStart, setFyStart] = useState(settings.financialYear.startYear);
   const [gbpRate, setGbpRate] = useState(settings.gbpToInrRate);
   const [loading, setLoading] = useState(false);
@@ -264,7 +264,7 @@ function SettingsModal({ onClose }) {
 
 // View Entries Modal
 function ViewEntriesModal({ onClose }) {
-  const { billingEntries, clients, settings } = useApp();
+  const { billingEntries } = useApp();
   const entries = Object.values(billingEntries);
 
   const formatCurrency = (amount) => {
