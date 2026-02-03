@@ -290,6 +290,17 @@ export function AppProvider({ children }) {
     }
   }, [showToast]);
 
+  const updateUsdExchangeRate = useCallback(async (rate) => {
+    try {
+      await settingsApi.updateUsdExchangeRate(rate);
+      dispatch({ type: ActionTypes.UPDATE_SETTING, payload: { key: 'usdToInrRate', value: rate } });
+      showToast(`USD exchange rate updated: $1 = ₹${rate.toFixed(2)}`);
+    } catch (error) {
+      showToast('Error updating USD exchange rate', 'error');
+      throw error;
+    }
+  }, [showToast]);
+
   // Modal actions
   const openModal = useCallback((modalName) => {
     dispatch({ type: ActionTypes.SET_ACTIVE_MODAL, payload: modalName });
@@ -315,6 +326,7 @@ export function AppProvider({ children }) {
     // Settings actions
     updateFinancialYear,
     updateExchangeRate,
+    updateUsdExchangeRate,
     // UI actions
     showToast,
     openModal,

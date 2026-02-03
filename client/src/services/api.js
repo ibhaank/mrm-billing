@@ -13,7 +13,10 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // You can add auth tokens here if needed
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -24,7 +27,44 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Don't retry if it's already a refresh token request or already retried
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes('/auth/refresh-token')
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) {
+          throw new Error('No refresh token available');
+        }
+
+        const res = await api.post('/auth/refresh-token', { refreshToken });
+        const { accessToken } = res.data;
+
+        localStorage.setItem('accessToken', accessToken);
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+
+        return api(originalRequest);
+      } catch (refreshError) {
+        // Refresh failed, clear storage and reload
+        localStorage.clear();
+        window.location.href = '/';
+        return Promise.reject(refreshError);
+      }
+    }
+
+    // For refresh token failures or other errors, just clear and reload
+    if (error.response?.status === 401 && originalRequest.url?.includes('/auth/refresh-token')) {
+      localStorage.clear();
+      window.location.href = '/';
+    }
+
     console.error('API Error:', error.response?.data || error.message);
     return Promise.reject(error);
   }
@@ -70,7 +110,20 @@ export const settingsApi = {
   update: (key, value, description) => api.put(`/settings/${key}`, { value, description }),
   updateFinancialYear: (startYear) => api.put('/settings/financial-year', { startYear }),
   updateExchangeRate: (rate) => api.put('/settings/exchange-rate', { rate }),
+  updateUsdExchangeRate: (rate) => api.put('/settings/usd-exchange-rate', { rate }),
   initialize: () => api.post('/settings/initialize'),
+};
+
+// Auth API
+export const authApi = {
+  register: (data) => api.post('/auth/register', data),
+  login: (data) => api.post('/auth/login', data),
+  logout: (refreshToken) => api.post('/auth/logout', { refreshToken }),
+  verifyEmail: (token) => api.post('/auth/verify-email', { verificationToken: token }),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (token, password) => api.post('/auth/reset-password', { resetPasswordToken: token, newPassword: password }),
+  refreshToken: (refreshToken) => api.post('/auth/refresh-token', { refreshToken }),
+  getCurrentUser: () => api.get('/auth/me')
 };
 
 export default api;

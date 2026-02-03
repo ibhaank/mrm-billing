@@ -193,9 +193,10 @@ function RemoveClientModal({ onClose }) {
 
 // Settings Modal
 function SettingsModal({ onClose }) {
-  const { settings, updateFinancialYear, updateExchangeRate } = useApp();
+  const { settings, updateFinancialYear, updateExchangeRate, updateUsdExchangeRate } = useApp();
   const [fyStart, setFyStart] = useState(settings.financialYear.startYear);
   const [gbpRate, setGbpRate] = useState(settings.gbpToInrRate);
+  const [usdRate, setUsdRate] = useState(settings.usdToInrRate || 83.50);
   const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
@@ -206,6 +207,9 @@ function SettingsModal({ onClose }) {
       }
       if (gbpRate !== settings.gbpToInrRate) {
         await updateExchangeRate(parseFloat(gbpRate));
+      }
+      if (usdRate !== settings.usdToInrRate) {
+        await updateUsdExchangeRate(parseFloat(usdRate));
       }
       onClose();
     } catch (error) {
@@ -235,7 +239,7 @@ function SettingsModal({ onClose }) {
             ))}
           </select>
         </div>
-        <div className="input-group">
+        <div className="input-group" style={{ marginBottom: 16 }}>
           <label>GBP to INR Exchange Rate</label>
           <div className="input-prefix">
             <span>₹</span>
@@ -247,10 +251,26 @@ function SettingsModal({ onClose }) {
               placeholder="110.50"
             />
           </div>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>
+            Current rate: £1 = ₹{settings.gbpToInrRate}
+          </p>
         </div>
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>
-          Current rate: £1 = ₹{settings.gbpToInrRate}
-        </p>
+        <div className="input-group">
+          <label>USD to INR Exchange Rate</label>
+          <div className="input-prefix">
+            <span>₹</span>
+            <input
+              type="number"
+              step="0.01"
+              value={usdRate}
+              onChange={(e) => setUsdRate(e.target.value)}
+              placeholder="83.50"
+            />
+          </div>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>
+            Current rate: $1 = ₹{settings.usdToInrRate || 83.50}
+          </p>
+        </div>
       </div>
       <div className="modal-footer">
         <button className="btn btn-secondary" onClick={onClose}>Cancel</button>

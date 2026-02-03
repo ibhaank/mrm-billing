@@ -3,6 +3,10 @@ const router = express.Router();
 const BillingEntry = require('../models/BillingEntry');
 const Client = require('../models/Client');
 const Settings = require('../models/Settings');
+const { authenticateToken } = require('../middleware/auth');
+
+// Protect all billing routes
+router.use(authenticateToken);
 
 // @route   GET /api/billing
 // @desc    Get all billing entries with optional filters

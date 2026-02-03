@@ -4,6 +4,7 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 
 // Import routes
+const authRoutes = require('./routes/auth');
 const clientRoutes = require('./routes/clients');
 const billingRoutes = require('./routes/billing');
 const settingsRoutes = require('./routes/settings');
@@ -30,6 +31,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/settings', settingsRoutes);
@@ -55,10 +57,18 @@ const initializeApp = async () => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
+  // JWT errors
+  if (err.name === 'JsonWebTokenError') {
+    return res.status(401).json({ message: 'Invalid token' });
+  }
+  if (err.name === 'TokenExpiredError') {
+    return res.status(401).json({ message: 'Token expired' });
+  }
+
   console.error('Error:', err.stack);
-  res.status(500).json({ 
-    message: 'Something went wrong!', 
-    error: process.env.NODE_ENV === 'production' ? {} : err.message 
+  res.status(500).json({
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'production' ? {} : err.message
   });
 });
 

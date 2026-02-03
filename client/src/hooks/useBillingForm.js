@@ -5,8 +5,10 @@ const initialFormState = {
   iprsAmt: '',
   prsGbp: '',
   prsAmt: '',
+  soundExUsd: '',
   soundExAmt: '',
   isamraAmt: '',
+  ascapUsd: '',
   ascapAmt: '',
   pplAmt: '',
   iprsComis: '',
@@ -32,8 +34,9 @@ export function useBillingForm() {
   // Service fee from selected client
   const serviceFee = selectedClient?.fee || 0;
 
-  // GBP to INR rate from settings
+  // Exchange rates from settings
   const gbpToInrRate = settings.gbpToInrRate || 110.50;
+  const usdToInrRate = settings.usdToInrRate || 83.50;
 
   // GST rate
   const gstRate = settings.gstRate || 0.18;
@@ -45,8 +48,10 @@ export function useBillingForm() {
         iprsAmt: currentEntry.iprsAmt || '',
         prsGbp: currentEntry.prsGbp || '',
         prsAmt: currentEntry.prsAmt || '',
+        soundExUsd: currentEntry.soundExUsd || '',
         soundExAmt: currentEntry.soundExAmt || '',
         isamraAmt: currentEntry.isamraAmt || '',
+        ascapUsd: currentEntry.ascapUsd || '',
         ascapAmt: currentEntry.ascapAmt || '',
         pplAmt: currentEntry.pplAmt || '',
         iprsComis: currentEntry.iprsComis || '',
@@ -60,7 +65,7 @@ export function useBillingForm() {
         totalInvoice: currentEntry.totalInvoice || 0,
         iprsRemarks: currentEntry.iprsRemarks || '',
         prsRemarks: currentEntry.prsRemarks || '',
-        invoiceDate: currentEntry.invoiceDate 
+        invoiceDate: currentEntry.invoiceDate
           ? new Date(currentEntry.invoiceDate).toISOString().split('T')[0]
           : new Date().toISOString().split('T')[0],
         invoiceStatus: currentEntry.invoiceStatus || 'draft',
@@ -76,13 +81,15 @@ export function useBillingForm() {
   const calculations = useMemo(() => {
     const iprsAmt = parseFloat(formData.iprsAmt) || 0;
     const prsGbp = parseFloat(formData.prsGbp) || 0;
-    const soundExAmt = parseFloat(formData.soundExAmt) || 0;
+    const soundExUsd = parseFloat(formData.soundExUsd) || 0;
     const isamraAmt = parseFloat(formData.isamraAmt) || 0;
-    const ascapAmt = parseFloat(formData.ascapAmt) || 0;
+    const ascapUsd = parseFloat(formData.ascapUsd) || 0;
     const pplAmt = parseFloat(formData.pplAmt) || 0;
 
-    // PRS in INR
+    // Currency conversions
     const prsAmt = prsGbp * gbpToInrRate;
+    const soundExAmt = soundExUsd * usdToInrRate;
+    const ascapAmt = ascapUsd * usdToInrRate;
 
     // Commissions
     const iprsComis = iprsAmt * serviceFee;
@@ -99,6 +106,8 @@ export function useBillingForm() {
 
     return {
       prsAmt,
+      soundExAmt,
+      ascapAmt,
       iprsComis,
       prsComis,
       soundExComis,
@@ -109,8 +118,8 @@ export function useBillingForm() {
       gst,
       totalInvoice,
     };
-  }, [formData.iprsAmt, formData.prsGbp, formData.soundExAmt, formData.isamraAmt, 
-      formData.ascapAmt, formData.pplAmt, gbpToInrRate, serviceFee, gstRate]);
+  }, [formData.iprsAmt, formData.prsGbp, formData.soundExUsd, formData.isamraAmt,
+      formData.ascapUsd, formData.pplAmt, gbpToInrRate, usdToInrRate, serviceFee, gstRate]);
 
   // Update field
   const updateField = useCallback((field, value) => {
@@ -180,6 +189,7 @@ export function useBillingForm() {
     isDirty,
     serviceFee,
     gbpToInrRate,
+    usdToInrRate,
     handleInputChange,
     updateField,
     clearForm,

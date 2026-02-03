@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Client = require('../models/Client');
+const { authenticateToken } = require('../middleware/auth');
+
+// Protect all client routes
+router.use(authenticateToken);
 
 // @route   GET /api/clients
 // @desc    Get all active clients

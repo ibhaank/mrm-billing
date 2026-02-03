@@ -1,4 +1,5 @@
 import React from 'react';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppProvider, useApp } from './contexts/AppContext';
 import Header from './components/Header';
 import MonthTabs from './components/MonthTabs';
@@ -8,9 +9,10 @@ import BillingForm from './components/BillingForm';
 import Toast from './components/Toast';
 import Modals from './components/Modals';
 import ReportsPanel from './components/ReportsPanel';
+import AuthModal from './components/AuthModal';
 import './styles/App.css';
 
-function AppContent() {
+function AuthenticatedApp() {
   const { activeModal, closeModal } = useApp();
 
   return (
@@ -31,11 +33,37 @@ function AppContent() {
   );
 }
 
-function App() {
+function AppContent() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Show loading spinner while checking auth
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  // Show auth modal if not authenticated
+  if (!isAuthenticated) {
+    return <AuthModal />;
+  }
+
+  // Only load AppProvider after authentication
   return (
     <AppProvider>
-      <AppContent />
+      <AuthenticatedApp />
     </AppProvider>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

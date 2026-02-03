@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Settings = require('../models/Settings');
+const { authenticateToken, requireRole } = require('../middleware/auth');
+
+// All settings routes require authentication
+router.use(authenticateToken);
 
 // @route   GET /api/settings
 // @desc    Get all settings
@@ -42,8 +46,8 @@ router.get('/:key', async (req, res) => {
 
 // @route   PUT /api/settings/:key
 // @desc    Update a setting
-// @access  Public
-router.put('/:key', async (req, res) => {
+// @access  Admin
+router.put('/:key', requireRole(['admin']), async (req, res) => {
   try {
     const { value, description } = req.body;
     
@@ -62,8 +66,8 @@ router.put('/:key', async (req, res) => {
 
 // @route   POST /api/settings/initialize
 // @desc    Initialize default settings
-// @access  Public
-router.post('/initialize', async (req, res) => {
+// @access  Admin
+router.post('/initialize', requireRole(['admin']), async (req, res) => {
   try {
     await Settings.initializeDefaults();
     const settings = await Settings.find();
@@ -76,8 +80,8 @@ router.post('/initialize', async (req, res) => {
 
 // @route   PUT /api/settings/financial-year
 // @desc    Update financial year
-// @access  Public
-router.put('/financial-year', async (req, res) => {
+// @access  Admin
+router.put('/financial-year', requireRole(['admin']), async (req, res) => {
   try {
     const { startYear } = req.body;
     
@@ -104,23 +108,46 @@ router.put('/financial-year', async (req, res) => {
 
 // @route   PUT /api/settings/exchange-rate
 // @desc    Update GBP to INR exchange rate
-// @access  Public
-router.put('/exchange-rate', async (req, res) => {
+// @access  Admin
+router.put('/exchange-rate', requireRole(['admin']), async (req, res) => {
   try {
     const { rate } = req.body;
-    
+
     if (!rate || isNaN(rate) || rate <= 0) {
       return res.status(400).json({ message: 'Valid exchange rate is required' });
     }
-    
+
     await Settings.updateSetting('gbpToInrRate', parseFloat(rate));
-    
-    res.json({ 
+
+    res.json({
       message: `Exchange rate updated: £1 = ₹${parseFloat(rate).toFixed(2)}`,
       rate: parseFloat(rate)
     });
   } catch (error) {
     console.error('Error updating exchange rate:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   PUT /api/settings/usd-exchange-rate
+// @desc    Update USD to INR exchange rate
+// @access  Admin
+router.put('/usd-exchange-rate', requireRole(['admin']), async (req, res) => {
+  try {
+    const { rate } = req.body;
+
+    if (!rate || isNaN(rate) || rate <= 0) {
+      return res.status(400).json({ message: 'Valid exchange rate is required' });
+    }
+
+    await Settings.updateSetting('usdToInrRate', parseFloat(rate));
+
+    res.json({
+      message: `USD exchange rate updated: $1 = ₹${parseFloat(rate).toFixed(2)}`,
+      rate: parseFloat(rate)
+    });
+  } catch (error) {
+    console.error('Error updating USD exchange rate:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

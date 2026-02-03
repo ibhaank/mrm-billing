@@ -28,8 +28,10 @@ const billingEntrySchema = new mongoose.Schema({
   iprsAmt: { type: Number, default: 0 },
   prsGbp: { type: Number, default: 0 },
   prsAmt: { type: Number, default: 0 },
+  soundExUsd: { type: Number, default: 0 },
   soundExAmt: { type: Number, default: 0 },
   isamraAmt: { type: Number, default: 0 },
+  ascapUsd: { type: Number, default: 0 },
   ascapAmt: { type: Number, default: 0 },
   pplAmt: { type: Number, default: 0 },
   
@@ -67,8 +69,9 @@ const billingEntrySchema = new mongoose.Schema({
     default: 'draft'
   },
   
-  // Exchange rate used
+  // Exchange rates used
   gbpToInrRate: { type: Number, default: 110.50 },
+  usdToInrRate: { type: Number, default: 83.50 },
   
   // Timestamps
   createdAt: { type: Date, default: Date.now },

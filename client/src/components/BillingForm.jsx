@@ -31,6 +31,7 @@ function BillingForm() {
     status,
     serviceFee,
     gbpToInrRate,
+    usdToInrRate,
   } = useBillingForm();
 
   const { financialYear } = settings;
@@ -168,15 +169,27 @@ function BillingForm() {
               </div>
             </div>
             <div className="input-group">
+              <label>Sound Exchange ($)</label>
+              <div className="input-prefix">
+                <span>$</span>
+                <input
+                  type="number"
+                  name="soundExUsd"
+                  value={formData.soundExUsd}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+            <div className="input-group calculated">
               <label>Sound Exchange (₹)</label>
               <div className="input-prefix">
                 <span>₹</span>
                 <input
                   type="number"
-                  name="soundExAmt"
-                  value={formData.soundExAmt}
-                  onChange={handleInputChange}
-                  placeholder="0.00"
+                  value={calculations.soundExAmt.toFixed(2)}
+                  readOnly
+                  title={`$1 = ₹${usdToInrRate}`}
                 />
               </div>
             </div>
@@ -194,15 +207,27 @@ function BillingForm() {
               </div>
             </div>
             <div className="input-group">
+              <label>ASCAP Amount ($)</label>
+              <div className="input-prefix">
+                <span>$</span>
+                <input
+                  type="number"
+                  name="ascapUsd"
+                  value={formData.ascapUsd}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+            <div className="input-group calculated">
               <label>ASCAP Amount (₹)</label>
               <div className="input-prefix">
                 <span>₹</span>
                 <input
                   type="number"
-                  name="ascapAmt"
-                  value={formData.ascapAmt}
-                  onChange={handleInputChange}
-                  placeholder="0.00"
+                  value={calculations.ascapAmt.toFixed(2)}
+                  readOnly
+                  title={`$1 = ₹${usdToInrRate}`}
                 />
               </div>
             </div>

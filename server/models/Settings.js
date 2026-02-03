@@ -33,6 +33,11 @@ const defaultSettings = {
     value: 110.50,
     description: 'GBP to INR exchange rate'
   },
+  usdToInrRate: {
+    key: 'usdToInrRate',
+    value: 83.50,
+    description: 'USD to INR exchange rate'
+  },
   gstRate: {
     key: 'gstRate',
     value: 0.18,

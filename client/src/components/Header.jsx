@@ -1,8 +1,10 @@
 import React from 'react';
 import { useApp } from '../contexts/AppContext';
+import { useAuth } from '../contexts/AuthContext';
 
 function Header() {
   const { settings, openModal } = useApp();
+  const { user, logout } = useAuth();
   const { financialYear } = settings;
 
   return (
@@ -17,6 +19,10 @@ function Header() {
         </div>
       </div>
       <div className="header-actions">
+        <div className="user-info">
+          <span className="user-name">{user?.name}</span>
+          {user?.role === 'admin' && <span className="admin-badge">Admin</span>}
+        </div>
         <button className="btn btn-secondary" onClick={() => openModal('settings')}>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3"></circle>
@@ -64,6 +70,14 @@ function Header() {
             <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
           </svg>
           Reports
+        </button>
+        <button className="btn btn-secondary" onClick={logout}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Logout
         </button>
       </div>
     </header>
