@@ -151,7 +151,7 @@ const AuthModal = () => {
             {devResetUrl && (
               <div className="dev-reset-link">
                 <p>No email configured. Use this link to reset:</p>
-                <button type="button" className="btn btn-primary btn-block" onClick={() => { window.location.href = devResetUrl; }}>
+                <button type="button" className="btn btn-primary btn-block" onClick={() => { window.location.href = '/?resetToken=' + new URL(devResetUrl).searchParams.get('resetToken'); }}>
                   Open Reset Link
                 </button>
               </div>
