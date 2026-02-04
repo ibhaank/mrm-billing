@@ -180,7 +180,7 @@ export const AuthProvider = ({ children }) => {
   const forgotPassword = async (email) => {
     try {
       const res = await authApi.forgotPassword(email);
-      return { success: true, message: res.data.message };
+      return { success: true, message: res.data.message, resetUrl: res.data.resetUrl };
     } catch (error) {
       const message = error.response?.data?.message || 'Request failed';
       return { success: false, error: message };

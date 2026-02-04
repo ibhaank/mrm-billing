@@ -172,6 +172,75 @@ router.post('/refresh-token', async (req, res) => {
   }
 });
 
+// Forgot Password
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email, isActive: true });
+
+    // Always return the same message — don't reveal whether the email exists
+    if (!user) {
+      return res.json({ message: 'If that email is registered, a reset link has been sent.' });
+    }
+
+    // Generate reset token (1 hour expiry)
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 60 * 60 * 1000;
+    await user.save();
+
+    // Try sending email; if SMTP is not configured just log the link
+    const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/?resetToken=${resetToken}`;
+    try {
+      await sendPasswordResetEmail(email, resetToken, user.name);
+      console.log('Password reset email sent to:', email);
+    } catch (emailError) {
+      // SMTP not configured — return the link directly so it can be used in-app
+      console.log('\n===== PASSWORD RESET LINK (no SMTP configured) =====');
+      console.log(resetUrl);
+      console.log('=====================================================\n');
+      return res.json({ message: 'If that email is registered, a reset link has been sent.', resetUrl });
+    }
+
+    res.json({ message: 'If that email is registered, a reset link has been sent.' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Request failed' });
+  }
+});
+
+// Reset Password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { resetPasswordToken, newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 8) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters' });
+    }
+
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired reset link' });
+    }
+
+    // Update password and clear token
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ message: 'Password reset successful. You can now sign in.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ message: 'Password reset failed' });
+  }
+});
+
 // Get Current User
 router.get('/me', authenticateToken, async (req, res) => {
   try {

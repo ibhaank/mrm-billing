@@ -280,6 +280,23 @@ body { font-family: 'DM Sans', -apple-system, sans-serif; background: var(--bg-p
   border: 1px solid #cfc;
 }
 
+.dev-reset-link {
+  background: #fff8e0;
+  border: 1px solid #f0c040;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+.dev-reset-link p {
+  color: #8a6d00;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.auth-footer { margin-top: 20px; text-align: center; }
+.auth-link { background: none; border: none; color: #007bff; font-size: 14px; cursor: pointer; padding: 4px 0; font-family: inherit; }
+.auth-link:hover { text-decoration: underline; }
+
 .btn-block {
   width: 100%;
   padding: 12px;
