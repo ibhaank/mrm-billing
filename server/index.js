@@ -18,7 +18,11 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://billing.musicrightsmanagement.in']
+    : true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
