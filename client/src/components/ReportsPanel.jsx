@@ -16,34 +16,56 @@ const getClientInitials = (name) => {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 };
 
-// Month labels
-const MONTH_OPTIONS = [
-  { key: 'apr', label: 'April' },
-  { key: 'may', label: 'May' },
-  { key: 'jun', label: 'June' },
-  { key: 'jul', label: 'July' },
-  { key: 'aug', label: 'August' },
-  { key: 'sep', label: 'September' },
-  { key: 'oct', label: 'October' },
-  { key: 'nov', label: 'November' },
-  { key: 'dec', label: 'December' },
-  { key: 'jan', label: 'January' },
-  { key: 'feb', label: 'February' },
-  { key: 'mar', label: 'March' },
-];
+// Invoice-status display helpers
+const STATUS_LABELS = { draft: 'Draft', bill_sent: 'Bill Sent', amount_received: 'Received', outstanding: 'Outstanding', submitted: 'Submitted' };
+const STATUS_CLASSES = { draft: 'pending', bill_sent: 'pending', amount_received: 'yes', outstanding: 'negative', submitted: 'yes' };
+
+// Map a billing entry's month key + financialYear to a real Date (1st of that month)
+const MONTH_NUM = { apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12, jan: 1, feb: 2, mar: 3 };
+
+const getEntryDate = (entry) => {
+  const m = MONTH_NUM[entry.month];
+  const year = m >= 4 ? entry.financialYear.startYear : entry.financialYear.endYear;
+  return new Date(year, m - 1, 1);
+};
+
+// Shared date-range filter used by every report that needs it
+const DateRangeFilter = ({ dateFrom, dateTo, setDateFrom, setDateTo }) => (
+  <div className="filter-bar">
+    <div className="filter-group">
+      <label>From</label>
+      <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+    </div>
+    <div className="filter-separator">→</div>
+    <div className="filter-group">
+      <label>To</label>
+      <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+    </div>
+  </div>
+);
 
 function ReportsPanel({ onClose }) {
   const { clients, billingEntries, settings } = useApp();
   const [activeReport, setActiveReport] = useState('dashboard');
-  const [reportMonth, setReportMonth] = useState('apr');
 
   const { financialYear } = settings;
   const entries = Object.values(billingEntries);
 
-  // Filter entries by selected month
-  const monthEntries = useMemo(() => {
-    return entries.filter(e => e.month === reportMonth);
-  }, [entries, reportMonth]);
+  // Default date range = full financial year (Apr 1 → Mar 31)
+  const defaultFrom = `${financialYear.startYear}-04-01`;
+  const defaultTo   = `${financialYear.endYear}-03-31`;
+  const [dateFrom, setDateFrom] = useState(defaultFrom);
+  const [dateTo,   setDateTo]   = useState(defaultTo);
+
+  // Filter entries whose month falls within [dateFrom, dateTo]
+  const filteredEntries = useMemo(() => {
+    const from = new Date(dateFrom + 'T00:00:00');
+    const to   = new Date(dateTo   + 'T23:59:59');
+    return entries.filter(e => {
+      const d = getEntryDate(e);
+      return d >= from && d <= to;
+    });
+  }, [entries, dateFrom, dateTo]);
 
   // Calculate dashboard stats
   const dashboardStats = useMemo(() => {
@@ -56,6 +78,9 @@ function ReportsPanel({ onClose }) {
     
     return { totalClients, totalEntries, draftCount, submittedCount, totalCommission, totalInvoice };
   }, [clients, entries]);
+
+  // CSV filename suffix uses the selected date range
+  const dateLabel = `${dateFrom}_to_${dateTo}`;
 
   // Export to CSV
   const exportCSV = (reportType) => {
@@ -73,35 +98,48 @@ function ReportsPanel({ onClose }) {
 
       case 'royalty':
         csv = 'Client ID,Client Name,Month,IPRS,PRS GBP,PRS INR,Sound Ex,ISAMRA,ASCAP,PPL,Total\n';
-        monthEntries.forEach(e => {
+        filteredEntries.forEach(e => {
           const total = (e.iprsAmt || 0) + (e.prsAmt || 0) + (e.soundExAmt || 0) + (e.isamraAmt || 0) + (e.ascapAmt || 0) + (e.pplAmt || 0);
           csv += `${e.clientId},"${e.clientName}","${e.monthLabel}",${e.iprsAmt || 0},${e.prsGbp || 0},${e.prsAmt || 0},${e.soundExAmt || 0},${e.isamraAmt || 0},${e.ascapAmt || 0},${e.pplAmt || 0},${total}\n`;
         });
-        filename = `MRM_Royalty_Report_${reportMonth}.csv`;
+        filename = `MRM_Royalty_Report_${dateLabel}.csv`;
         break;
 
       case 'commission':
         csv = 'Client ID,Client Name,Month,Fee %,IPRS Comis,PRS Comis,Sound Ex,ISAMRA,ASCAP,PPL,Total Commission\n';
-        monthEntries.forEach(e => {
+        filteredEntries.forEach(e => {
           csv += `${e.clientId},"${e.clientName}","${e.monthLabel}",${((e.serviceFee || 0) * 100).toFixed(0)}%,${e.iprsComis || 0},${e.prsComis || 0},${e.soundExComis || 0},${e.isamraComis || 0},${e.ascapComis || 0},${e.pplComis || 0},${e.totalCommission || 0}\n`;
         });
-        filename = `MRM_Commission_Report_${reportMonth}.csv`;
+        filename = `MRM_Commission_Report_${dateLabel}.csv`;
         break;
 
       case 'gst':
         csv = 'Client ID,Client Name,Month,Total Commission,GST %,GST Amount,Total Invoice\n';
-        monthEntries.forEach(e => {
+        filteredEntries.forEach(e => {
           csv += `${e.clientId},"${e.clientName}","${e.monthLabel}",${e.totalCommission || 0},18%,${e.gst || 0},${e.totalInvoice || 0}\n`;
         });
-        filename = `MRM_GST_Report_${reportMonth}.csv`;
+        filename = `MRM_GST_Report_${dateLabel}.csv`;
         break;
 
       case 'invoice':
         csv = 'Client ID,Client Name,Month,Invoice Value,Status,Date\n';
-        monthEntries.forEach(e => {
-          csv += `${e.clientId},"${e.clientName}","${e.monthLabel}",${e.totalInvoice || 0},${e.status},${e.invoiceDate ? new Date(e.invoiceDate).toLocaleDateString('en-IN') : '-'}\n`;
+        filteredEntries.forEach(e => {
+          csv += `${e.clientId},"${e.clientName}","${e.monthLabel}",${e.totalInvoice || 0},${STATUS_LABELS[e.invoiceStatus] || 'Draft'},${e.invoiceDate ? new Date(e.invoiceDate).toLocaleDateString('en-IN') : '-'}\n`;
         });
-        filename = `MRM_Invoice_Report_${reportMonth}.csv`;
+        filename = `MRM_Invoice_Report_${dateLabel}.csv`;
+        break;
+
+      case 'outstanding':
+        csv = 'Client ID,Client Name,Draft Entries,Submitted Entries,Total Value,Status\n';
+        clients.forEach(client => {
+          const clientEntries = entries.filter(e => e.clientId === client.clientId);
+          if (clientEntries.length === 0) return;
+          const drafts = clientEntries.filter(e => e.status === 'draft').length;
+          const submitted = clientEntries.filter(e => e.status === 'submitted').length;
+          const totalValue = clientEntries.reduce((sum, e) => sum + (e.totalInvoice || 0), 0);
+          csv += `${client.clientId},"${client.name}",${drafts},${submitted},${totalValue.toFixed(2)},${drafts === 0 ? 'Complete' : 'Pending'}\n`;
+        });
+        filename = `MRM_Outstanding_Report_${dateLabel}.csv`;
         break;
 
       default:
@@ -292,27 +330,17 @@ function ReportsPanel({ onClose }) {
                 Export CSV
               </button>
             </div>
-            <div className="filter-bar">
-              <div className="filter-group">
-                <label>Month</label>
-                <select value={reportMonth} onChange={(e) => setReportMonth(e.target.value)}>
-                  {MONTH_OPTIONS.map(m => (
-                    <option key={m.key} value={m.key}>
-                      {m.label} {['jan', 'feb', 'mar'].includes(m.key) ? financialYear.endYear : financialYear.startYear}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <DateRangeFilter dateFrom={dateFrom} dateTo={dateTo} setDateFrom={setDateFrom} setDateTo={setDateTo} />
             <div className="report-container">
               <div className="report-header">
-                <h3>Royalty Data <span className="count">{monthEntries.length} entries</span></h3>
+                <h3>Royalty Data <span className="count">{filteredEntries.length} entries</span></h3>
               </div>
               <div className="table-wrapper">
                 <table className="report-table">
                   <thead>
                     <tr>
                       <th>Client</th>
+                      <th>Month</th>
                       <th>IPRS (₹)</th>
                       <th>PRS (£)</th>
                       <th>PRS (₹)</th>
@@ -323,14 +351,14 @@ function ReportsPanel({ onClose }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {monthEntries.length === 0 ? (
+                    {filteredEntries.length === 0 ? (
                       <tr>
-                        <td colSpan="8" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 40 }}>
-                          No entries for this month
+                        <td colSpan="9" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 40 }}>
+                          No entries for this date range
                         </td>
                       </tr>
                     ) : (
-                      monthEntries.map((entry, idx) => (
+                      filteredEntries.map((entry, idx) => (
                         <tr key={idx}>
                           <td>
                             <div className="client-cell">
@@ -341,6 +369,7 @@ function ReportsPanel({ onClose }) {
                               </div>
                             </div>
                           </td>
+                          <td>{entry.monthLabel}</td>
                           <td><span className="amount">{formatCurrency(entry.iprsAmt)}</span></td>
                           <td><span className="amount">£{(entry.prsGbp || 0).toFixed(2)}</span></td>
                           <td><span className="amount">{formatCurrency(entry.prsAmt)}</span></td>
@@ -375,27 +404,17 @@ function ReportsPanel({ onClose }) {
                 Export CSV
               </button>
             </div>
-            <div className="filter-bar">
-              <div className="filter-group">
-                <label>Month</label>
-                <select value={reportMonth} onChange={(e) => setReportMonth(e.target.value)}>
-                  {MONTH_OPTIONS.map(m => (
-                    <option key={m.key} value={m.key}>
-                      {m.label} {['jan', 'feb', 'mar'].includes(m.key) ? financialYear.endYear : financialYear.startYear}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <DateRangeFilter dateFrom={dateFrom} dateTo={dateTo} setDateFrom={setDateFrom} setDateTo={setDateTo} />
             <div className="report-container">
               <div className="report-header">
-                <h3>Commission Data <span className="count">{monthEntries.length} entries</span></h3>
+                <h3>Commission Data <span className="count">{filteredEntries.length} entries</span></h3>
               </div>
               <div className="table-wrapper">
                 <table className="report-table">
                   <thead>
                     <tr>
                       <th>Client</th>
+                      <th>Month</th>
                       <th>Fee %</th>
                       <th>IPRS</th>
                       <th>PRS</th>
@@ -407,15 +426,15 @@ function ReportsPanel({ onClose }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {monthEntries.length === 0 ? (
+                    {filteredEntries.length === 0 ? (
                       <tr>
-                        <td colSpan="9" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 40 }}>
-                          No entries for this month
+                        <td colSpan="10" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 40 }}>
+                          No entries for this date range
                         </td>
                       </tr>
                     ) : (
                       <>
-                        {monthEntries.map((entry, idx) => (
+                        {filteredEntries.map((entry, idx) => (
                           <tr key={idx}>
                             <td>
                               <div className="client-cell">
@@ -425,6 +444,7 @@ function ReportsPanel({ onClose }) {
                                 </div>
                               </div>
                             </td>
+                            <td>{entry.monthLabel}</td>
                             <td><span className="amount">{((entry.serviceFee || 0) * 100).toFixed(0)}%</span></td>
                             <td><span className="amount">{formatCurrency(entry.iprsComis)}</span></td>
                             <td><span className="amount">{formatCurrency(entry.prsComis)}</span></td>
@@ -436,8 +456,8 @@ function ReportsPanel({ onClose }) {
                           </tr>
                         ))}
                         <tr className="summary-row">
-                          <td colSpan="8"><strong>Total</strong></td>
-                          <td><span className="amount positive">{formatCurrency(monthEntries.reduce((sum, e) => sum + (e.totalCommission || 0), 0))}</span></td>
+                          <td colSpan="9"><strong>Total</strong></td>
+                          <td><span className="amount positive">{formatCurrency(filteredEntries.reduce((sum, e) => sum + (e.totalCommission || 0), 0))}</span></td>
                         </tr>
                       </>
                     )}
@@ -465,27 +485,17 @@ function ReportsPanel({ onClose }) {
                 Export CSV
               </button>
             </div>
-            <div className="filter-bar">
-              <div className="filter-group">
-                <label>Month</label>
-                <select value={reportMonth} onChange={(e) => setReportMonth(e.target.value)}>
-                  {MONTH_OPTIONS.map(m => (
-                    <option key={m.key} value={m.key}>
-                      {m.label} {['jan', 'feb', 'mar'].includes(m.key) ? financialYear.endYear : financialYear.startYear}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <DateRangeFilter dateFrom={dateFrom} dateTo={dateTo} setDateFrom={setDateFrom} setDateTo={setDateTo} />
             <div className="report-container">
               <div className="report-header">
-                <h3>GST Data <span className="count">{monthEntries.length} entries</span></h3>
+                <h3>GST Data <span className="count">{filteredEntries.length} entries</span></h3>
               </div>
               <div className="table-wrapper">
                 <table className="report-table">
                   <thead>
                     <tr>
                       <th>Client</th>
+                      <th>Month</th>
                       <th>Total Commission</th>
                       <th>GST Rate</th>
                       <th>GST Amount</th>
@@ -493,15 +503,15 @@ function ReportsPanel({ onClose }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {monthEntries.length === 0 ? (
+                    {filteredEntries.length === 0 ? (
                       <tr>
-                        <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 40 }}>
-                          No entries for this month
+                        <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 40 }}>
+                          No entries for this date range
                         </td>
                       </tr>
                     ) : (
                       <>
-                        {monthEntries.map((entry, idx) => (
+                        {filteredEntries.map((entry, idx) => (
                           <tr key={idx}>
                             <td>
                               <div className="client-cell">
@@ -511,6 +521,7 @@ function ReportsPanel({ onClose }) {
                                 </div>
                               </div>
                             </td>
+                            <td>{entry.monthLabel}</td>
                             <td><span className="amount">{formatCurrency(entry.totalCommission)}</span></td>
                             <td>18%</td>
                             <td><span className="amount">{formatCurrency(entry.gst)}</span></td>
@@ -518,9 +529,9 @@ function ReportsPanel({ onClose }) {
                           </tr>
                         ))}
                         <tr className="summary-row">
-                          <td colSpan="3"><strong>Total</strong></td>
-                          <td><span className="amount">{formatCurrency(monthEntries.reduce((sum, e) => sum + (e.gst || 0), 0))}</span></td>
-                          <td><span className="amount positive">{formatCurrency(monthEntries.reduce((sum, e) => sum + (e.totalInvoice || 0), 0))}</span></td>
+                          <td colSpan="4"><strong>Total</strong></td>
+                          <td><span className="amount">{formatCurrency(filteredEntries.reduce((sum, e) => sum + (e.gst || 0), 0))}</span></td>
+                          <td><span className="amount positive">{formatCurrency(filteredEntries.reduce((sum, e) => sum + (e.totalInvoice || 0), 0))}</span></td>
                         </tr>
                       </>
                     )}
@@ -548,21 +559,10 @@ function ReportsPanel({ onClose }) {
                 Export CSV
               </button>
             </div>
-            <div className="filter-bar">
-              <div className="filter-group">
-                <label>Month</label>
-                <select value={reportMonth} onChange={(e) => setReportMonth(e.target.value)}>
-                  {MONTH_OPTIONS.map(m => (
-                    <option key={m.key} value={m.key}>
-                      {m.label} {['jan', 'feb', 'mar'].includes(m.key) ? financialYear.endYear : financialYear.startYear}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <DateRangeFilter dateFrom={dateFrom} dateTo={dateTo} setDateFrom={setDateFrom} setDateTo={setDateTo} />
             <div className="report-container">
               <div className="report-header">
-                <h3>Invoice Data <span className="count">{monthEntries.length} entries</span></h3>
+                <h3>Invoice Data <span className="count">{filteredEntries.length} entries</span></h3>
               </div>
               <div className="table-wrapper">
                 <table className="report-table">
@@ -576,14 +576,14 @@ function ReportsPanel({ onClose }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {monthEntries.length === 0 ? (
+                    {filteredEntries.length === 0 ? (
                       <tr>
                         <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 40 }}>
-                          No entries for this month
+                          No entries for this date range
                         </td>
                       </tr>
                     ) : (
-                      monthEntries.map((entry, idx) => (
+                      filteredEntries.map((entry, idx) => (
                         <tr key={idx}>
                           <td>
                             <div className="client-cell">
@@ -597,8 +597,8 @@ function ReportsPanel({ onClose }) {
                           <td>{entry.monthLabel}</td>
                           <td><span className="amount positive">{formatCurrency(entry.totalInvoice)}</span></td>
                           <td>
-                            <span className={`status-badge ${entry.status === 'submitted' ? 'yes' : 'pending'}`}>
-                              {entry.status || 'Draft'}
+                            <span className={`status-badge ${STATUS_CLASSES[entry.invoiceStatus] || 'pending'}`}>
+                              {STATUS_LABELS[entry.invoiceStatus] || 'Draft'}
                             </span>
                           </td>
                           <td>{entry.invoiceDate ? new Date(entry.invoiceDate).toLocaleDateString('en-IN') : '-'}</td>
@@ -620,6 +620,14 @@ function ReportsPanel({ onClose }) {
                 <h2>Outstanding Report</h2>
                 <p>Entries pending submission</p>
               </div>
+              <button className="btn btn-primary" onClick={() => exportCSV('outstanding')}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export CSV
+              </button>
             </div>
             <div className="stats-grid">
               <div className="stat-card" style={{ '--card-accent': 'var(--accent-blue)' }}>

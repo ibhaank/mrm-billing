@@ -28,7 +28,8 @@ router.get('/', async (req, res) => {
       ];
     }
     
-    const clients = await Client.find(query).sort({ name: 1 });
+    const clients = await Client.find(query);
+    clients.sort((a, b) => (parseInt(a.clientId?.split('-')[1], 10) || 0) - (parseInt(b.clientId?.split('-')[1], 10) || 0));
     res.json(clients);
   } catch (error) {
     console.error('Error fetching clients:', error);

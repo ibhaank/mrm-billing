@@ -142,7 +142,12 @@ billingEntrySchema.statics.getByMonth = function(month, financialYear) {
   return this.find({ 
     month, 
     'financialYear.startYear': financialYear 
-  }).sort({ clientName: 1 });
+  });
+};
+
+// Helper: sort an array of billing entries by numeric clientId
+billingEntrySchema.statics.sortByClientId = function(entries) {
+  return entries.sort((a, b) => (parseInt(a.clientId?.split('-')[1], 10) || 0) - (parseInt(b.clientId?.split('-')[1], 10) || 0));
 };
 
 // Static method to get client entries

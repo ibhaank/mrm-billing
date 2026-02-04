@@ -1,8 +1,110 @@
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 const User = require('../models/User');
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt');
+const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
 const { authenticateToken } = require('../middleware/auth');
+
+// Register
+router.post('/register', async (req, res) => {
+  try {
+    const { email, password, name } = req.body;
+
+    // Validate input
+    if (!email || !password || !name) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    // Password strength check
+    if (password.length < 8) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters' });
+    }
+
+    // Check if user exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+
+    // Check if this is the first user (make them admin)
+    const userCount = await User.countDocuments();
+    const role = userCount === 0 ? 'admin' : 'user';
+
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+
+    // Create user
+    const user = await User.create({
+      email,
+      password,
+      name,
+      role,
+      verificationToken,
+      verificationTokenExpires
+    });
+
+    // Send verification email
+    try {
+      await sendVerificationEmail(email, verificationToken, name);
+      res.status(201).json({
+        message: 'Registration successful! Please check your email to verify your account.',
+        isFirstUser: role === 'admin'
+      });
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // Still return success but with different message
+      res.status(201).json({
+        message: 'Registration successful! However, verification email could not be sent. Please contact support.',
+        isFirstUser: role === 'admin'
+      });
+    }
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Registration failed', error: error.message });
+  }
+});
+
+// Verify Email
+router.post('/verify-email', async (req, res) => {
+  try {
+    const { verificationToken } = req.body;
+
+    const user = await User.findOne({
+      verificationToken,
+      verificationTokenExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired verification token' });
+    }
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.verificationTokenExpires = undefined;
+    await user.save();
+
+    // Auto-login: generate tokens
+    const accessToken = generateAccessToken(user._id, user.email, user.role);
+    const refreshToken = generateRefreshToken(user._id);
+
+    res.json({
+      message: 'Email verified successfully!',
+      accessToken,
+      refreshToken,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('Verification error:', error);
+    res.status(500).json({ message: 'Verification failed' });
+  }
+});
 
 // Login
 router.post('/login', async (req, res) => {

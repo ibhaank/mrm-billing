@@ -22,9 +22,12 @@ router.get('/', async (req, res) => {
     if (status) query.status = status;
     if (financialYear) query['financialYear.startYear'] = parseInt(financialYear);
     
-    const entries = await BillingEntry.find(query)
-      .sort({ clientName: 1, month: 1 });
-    
+    const entries = await BillingEntry.find(query);
+    entries.sort((a, b) => {
+      const idDiff = (parseInt(a.clientId?.split('-')[1], 10) || 0) - (parseInt(b.clientId?.split('-')[1], 10) || 0);
+      return idDiff !== 0 ? idDiff : a.month.localeCompare(b.month);
+    });
+
     res.json(entries);
   } catch (error) {
     console.error('Error fetching billing entries:', error);

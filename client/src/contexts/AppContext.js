@@ -68,7 +68,7 @@ function appReducer(state, action) {
     case ActionTypes.SET_CLIENTS_ERROR:
       return { ...state, clientsError: action.payload, clientsLoading: false };
     case ActionTypes.ADD_CLIENT:
-      return { ...state, clients: [...state.clients, action.payload].sort((a, b) => a.name.localeCompare(b.name)) };
+      return { ...state, clients: [...state.clients, action.payload].sort((a, b) => (parseInt(a.clientId?.split('-')[1], 10) || 0) - (parseInt(b.clientId?.split('-')[1], 10) || 0)) };
     case ActionTypes.UPDATE_CLIENT:
       return {
         ...state,

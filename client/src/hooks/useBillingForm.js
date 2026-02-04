@@ -41,7 +41,7 @@ export function useBillingForm() {
   // GST rate
   const gstRate = settings.gstRate || 0.18;
 
-  // Load entry data when currentEntry changes
+  // Load entry data when currentEntry, selectedClient, or currentMonth changes
   useEffect(() => {
     if (currentEntry) {
       setFormData({
@@ -72,10 +72,11 @@ export function useBillingForm() {
       });
       setIsDirty(false);
     } else {
+      // Clear form when no entry exists for this client/month combination
       setFormData(initialFormState);
       setIsDirty(false);
     }
-  }, [currentEntry]);
+  }, [currentEntry, selectedClient, currentMonth]);
 
   // Calculate derived values
   const calculations = useMemo(() => {
