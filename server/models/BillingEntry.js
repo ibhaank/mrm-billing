@@ -54,7 +54,7 @@ const billingEntrySchema = new mongoose.Schema({
   prsRemarks: { type: String, default: '' },
   
   // Invoice Details
-  invoiceDate: { type: Date },
+  invoiceDate: { type: String },
   invoiceNumber: { type: String },
   invoiceStatus: {
     type: String,
