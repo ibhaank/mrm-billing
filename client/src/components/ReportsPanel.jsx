@@ -29,8 +29,83 @@ const getEntryDate = (entry) => {
   return new Date(year, m - 1, 1);
 };
 
+// Client filter dropdown to include/exclude specific clients
+// allClientIds includes IDs from both the clients list and any orphaned entries
+const ClientFilter = ({ clients, excludedClients, setExcludedClients, allClientIds }) => {
+  const [open, setOpen] = React.useState(false);
+  const [search, setSearch] = React.useState('');
+  const ref = React.useRef(null);
+  const searchRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  React.useEffect(() => {
+    if (open && searchRef.current) searchRef.current.focus();
+    if (!open) setSearch('');
+  }, [open]);
+
+  const toggleClient = (clientId) => {
+    setExcludedClients(prev => {
+      const next = new Set(prev);
+      if (next.has(clientId)) next.delete(clientId); else next.add(clientId);
+      return next;
+    });
+  };
+
+  const activeCount = clients.length - excludedClients.size;
+  const filtered = search
+    ? clients.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.clientId.toLowerCase().includes(search.toLowerCase()))
+    : clients;
+
+  return (
+    <div className="client-filter" ref={ref}>
+      <button className="client-filter-btn" onClick={() => setOpen(!open)}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        Clients ({activeCount}/{clients.length})
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+      {open && (
+        <div className="client-filter-dropdown">
+          <div className="client-filter-search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input ref={searchRef} type="text" placeholder="Search clients..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+          <div className="client-filter-actions">
+            <button onClick={() => setExcludedClients(new Set())}>Select All</button>
+            <button onClick={() => setExcludedClients(new Set(allClientIds || clients.map(c => c.clientId)))}>Deselect All</button>
+          </div>
+          <div className="client-filter-list">
+            {filtered.length === 0 ? (
+              <div className="client-filter-empty">No clients found</div>
+            ) : (
+              filtered.map(c => (
+                <label key={c.clientId} className="client-filter-item">
+                  <input type="checkbox" checked={!excludedClients.has(c.clientId)} onChange={() => toggleClient(c.clientId)} />
+                  <span className="client-avatar" style={{ width: 24, height: 24, fontSize: 9 }}>{getClientInitials(c.name)}</span>
+                  <span className="client-filter-name">{c.name}</span>
+                </label>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Shared date-range filter used by every report that needs it
-const DateRangeFilter = ({ dateFrom, dateTo, setDateFrom, setDateTo }) => (
+const DateRangeFilter = ({ dateFrom, dateTo, setDateFrom, setDateTo, clients, excludedClients, setExcludedClients, allClientIds }) => (
   <div className="filter-bar">
     <div className="filter-group">
       <label>From</label>
@@ -41,6 +116,7 @@ const DateRangeFilter = ({ dateFrom, dateTo, setDateFrom, setDateTo }) => (
       <label>To</label>
       <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
     </div>
+    {clients && <ClientFilter clients={clients} excludedClients={excludedClients} setExcludedClients={setExcludedClients} allClientIds={allClientIds} />}
   </div>
 );
 
@@ -56,16 +132,30 @@ function ReportsPanel({ onClose }) {
   const defaultTo   = `${financialYear.endYear}-03-31`;
   const [dateFrom, setDateFrom] = useState(defaultFrom);
   const [dateTo,   setDateTo]   = useState(defaultTo);
+  const [excludedClients, setExcludedClients] = useState(new Set());
 
-  // Filter entries whose month falls within [dateFrom, dateTo]
+  // Filter entries whose month falls within [dateFrom, dateTo] and not excluded
   const filteredEntries = useMemo(() => {
     const from = new Date(dateFrom + 'T00:00:00');
     const to   = new Date(dateTo   + 'T23:59:59');
     return entries.filter(e => {
+      if (excludedClients.has(e.clientId)) return false;
       const d = getEntryDate(e);
       return d >= from && d <= to;
     });
-  }, [entries, dateFrom, dateTo]);
+  }, [entries, dateFrom, dateTo, excludedClients]);
+
+  // All known client IDs (from clients list + any orphaned billing entries)
+  const allClientIds = useMemo(() => {
+    const ids = new Set(clients.map(c => c.clientId));
+    entries.forEach(e => ids.add(e.clientId));
+    return [...ids];
+  }, [clients, entries]);
+
+  // Filtered clients list (excluding deselected ones)
+  const filteredClients = useMemo(() => {
+    return clients.filter(c => !excludedClients.has(c.clientId));
+  }, [clients, excludedClients]);
 
   // Calculate dashboard stats
   const dashboardStats = useMemo(() => {
@@ -75,8 +165,14 @@ function ReportsPanel({ onClose }) {
     const submittedCount = entries.filter(e => e.status === 'submitted').length;
     const totalCommission = entries.reduce((sum, e) => sum + (e.totalCommission || 0), 0);
     const totalInvoice = entries.reduce((sum, e) => sum + (e.totalInvoice || 0), 0);
-    
-    return { totalClients, totalEntries, draftCount, submittedCount, totalCommission, totalInvoice };
+    const totalIprs = entries.reduce((sum, e) => sum + (e.iprsAmt || 0), 0);
+    const totalPrs = entries.reduce((sum, e) => sum + (e.prsAmt || 0), 0);
+    const totalAscap = entries.reduce((sum, e) => sum + (e.ascapAmt || 0), 0);
+    const totalIsamra = entries.reduce((sum, e) => sum + (e.isamraAmt || 0), 0);
+    const totalSoundEx = entries.reduce((sum, e) => sum + (e.soundExAmt || 0), 0);
+    const totalPpl = entries.reduce((sum, e) => sum + (e.pplAmt || 0), 0);
+
+    return { totalClients, totalEntries, draftCount, submittedCount, totalCommission, totalInvoice, totalIprs, totalPrs, totalAscap, totalIsamra, totalSoundEx, totalPpl };
   }, [clients, entries]);
 
   // CSV filename suffix uses the selected date range
@@ -90,7 +186,7 @@ function ReportsPanel({ onClose }) {
     switch (reportType) {
       case 'client-master':
         csv = 'Client ID,Client Name,Type,Service Fee\n';
-        clients.forEach(client => {
+        filteredClients.forEach(client => {
           csv += `${client.clientId},"${client.name}","${client.type}",${(client.fee * 100).toFixed(0)}%\n`;
         });
         filename = 'MRM_Client_Master_Report.csv';
@@ -131,7 +227,7 @@ function ReportsPanel({ onClose }) {
 
       case 'outstanding':
         csv = 'Client ID,Client Name,Draft Entries,Submitted Entries,Total Value,Status\n';
-        clients.forEach(client => {
+        filteredClients.forEach(client => {
           const clientEntries = entries.filter(e => e.clientId === client.clientId);
           if (clientEntries.length === 0) return;
           const drafts = clientEntries.filter(e => e.status === 'draft').length;
@@ -253,6 +349,34 @@ function ReportsPanel({ onClose }) {
                 <div className="stat-value">{formatCurrency(dashboardStats.totalInvoice)}</div>
               </div>
             </div>
+            <div className="stats-grid">
+              <div className="stat-card" style={{ '--card-accent': 'var(--accent-blue)' }}>
+                <div className="stat-label">Total IPRS</div>
+                <div className="stat-value">{formatCurrency(dashboardStats.totalIprs)}</div>
+              </div>
+              <div className="stat-card" style={{ '--card-accent': 'var(--accent-purple)' }}>
+                <div className="stat-label">Total PRS</div>
+                <div className="stat-value">{formatCurrency(dashboardStats.totalPrs)}</div>
+              </div>
+              <div className="stat-card" style={{ '--card-accent': 'var(--accent-orange)' }}>
+                <div className="stat-label">Total ASCAP</div>
+                <div className="stat-value">{formatCurrency(dashboardStats.totalAscap)}</div>
+              </div>
+            </div>
+            <div className="stats-grid">
+              <div className="stat-card" style={{ '--card-accent': 'var(--accent-green)' }}>
+                <div className="stat-label">Total ISAMRA</div>
+                <div className="stat-value">{formatCurrency(dashboardStats.totalIsamra)}</div>
+              </div>
+              <div className="stat-card" style={{ '--card-accent': 'var(--accent-blue)' }}>
+                <div className="stat-label">Total Sound Exchange</div>
+                <div className="stat-value">{formatCurrency(dashboardStats.totalSoundEx)}</div>
+              </div>
+              <div className="stat-card" style={{ '--card-accent': 'var(--accent-purple)' }}>
+                <div className="stat-label">Total PPL</div>
+                <div className="stat-value">{formatCurrency(dashboardStats.totalPpl)}</div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -273,9 +397,12 @@ function ReportsPanel({ onClose }) {
                 Export CSV
               </button>
             </div>
+            <div className="filter-bar">
+              <ClientFilter clients={clients} excludedClients={excludedClients} setExcludedClients={setExcludedClients} allClientIds={allClientIds} />
+            </div>
             <div className="report-container">
               <div className="report-header">
-                <h3>All Clients <span className="count">{clients.length}</span></h3>
+                <h3>All Clients <span className="count">{filteredClients.length}</span></h3>
               </div>
               <div className="table-wrapper">
                 <table className="report-table">
@@ -288,7 +415,7 @@ function ReportsPanel({ onClose }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {clients.map(client => (
+                    {filteredClients.map(client => (
                       <tr key={client.clientId}>
                         <td>
                           <div className="client-cell">
@@ -330,7 +457,7 @@ function ReportsPanel({ onClose }) {
                 Export CSV
               </button>
             </div>
-            <DateRangeFilter dateFrom={dateFrom} dateTo={dateTo} setDateFrom={setDateFrom} setDateTo={setDateTo} />
+            <DateRangeFilter dateFrom={dateFrom} dateTo={dateTo} setDateFrom={setDateFrom} setDateTo={setDateTo} clients={clients} excludedClients={excludedClients} setExcludedClients={setExcludedClients} allClientIds={allClientIds} />
             <div className="report-container">
               <div className="report-header">
                 <h3>Royalty Data <span className="count">{filteredEntries.length} entries</span></h3>
@@ -404,7 +531,7 @@ function ReportsPanel({ onClose }) {
                 Export CSV
               </button>
             </div>
-            <DateRangeFilter dateFrom={dateFrom} dateTo={dateTo} setDateFrom={setDateFrom} setDateTo={setDateTo} />
+            <DateRangeFilter dateFrom={dateFrom} dateTo={dateTo} setDateFrom={setDateFrom} setDateTo={setDateTo} clients={clients} excludedClients={excludedClients} setExcludedClients={setExcludedClients} allClientIds={allClientIds} />
             <div className="report-container">
               <div className="report-header">
                 <h3>Commission Data <span className="count">{filteredEntries.length} entries</span></h3>
@@ -485,7 +612,7 @@ function ReportsPanel({ onClose }) {
                 Export CSV
               </button>
             </div>
-            <DateRangeFilter dateFrom={dateFrom} dateTo={dateTo} setDateFrom={setDateFrom} setDateTo={setDateTo} />
+            <DateRangeFilter dateFrom={dateFrom} dateTo={dateTo} setDateFrom={setDateFrom} setDateTo={setDateTo} clients={clients} excludedClients={excludedClients} setExcludedClients={setExcludedClients} allClientIds={allClientIds} />
             <div className="report-container">
               <div className="report-header">
                 <h3>GST Data <span className="count">{filteredEntries.length} entries</span></h3>
@@ -559,7 +686,7 @@ function ReportsPanel({ onClose }) {
                 Export CSV
               </button>
             </div>
-            <DateRangeFilter dateFrom={dateFrom} dateTo={dateTo} setDateFrom={setDateFrom} setDateTo={setDateTo} />
+            <DateRangeFilter dateFrom={dateFrom} dateTo={dateTo} setDateFrom={setDateFrom} setDateTo={setDateTo} clients={clients} excludedClients={excludedClients} setExcludedClients={setExcludedClients} allClientIds={allClientIds} />
             <div className="report-container">
               <div className="report-header">
                 <h3>Invoice Data <span className="count">{filteredEntries.length} entries</span></h3>
@@ -629,6 +756,9 @@ function ReportsPanel({ onClose }) {
                 Export CSV
               </button>
             </div>
+            <div className="filter-bar">
+              <ClientFilter clients={clients} excludedClients={excludedClients} setExcludedClients={setExcludedClients} allClientIds={allClientIds} />
+            </div>
             <div className="stats-grid">
               <div className="stat-card" style={{ '--card-accent': 'var(--accent-blue)' }}>
                 <div className="stat-label">Clients with Entries</div>
@@ -663,12 +793,12 @@ function ReportsPanel({ onClose }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {clients.map(client => {
+                    {filteredClients.map(client => {
                       const clientEntries = entries.filter(e => e.clientId === client.clientId);
                       const draftCount = clientEntries.filter(e => e.status === 'draft').length;
                       const submittedCount = clientEntries.filter(e => e.status === 'submitted').length;
                       const totalValue = clientEntries.reduce((sum, e) => sum + (e.totalInvoice || 0), 0);
-                      
+
                       if (clientEntries.length === 0) return null;
                       
                       return (

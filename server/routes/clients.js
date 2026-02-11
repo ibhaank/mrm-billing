@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Client = require('../models/Client');
+const BillingEntry = require('../models/BillingEntry');
 const { authenticateToken } = require('../middleware/auth');
 
 // Protect all client routes
@@ -65,9 +66,24 @@ router.post('/', async (req, res) => {
     // Check if client ID already exists
     const existingClient = await Client.findOne({ clientId });
     if (existingClient) {
+      // If client exists but is inactive, reactivate with new data
+      if (!existingClient.isActive) {
+        existingClient.name = name || existingClient.name;
+        existingClient.type = type || existingClient.type;
+        existingClient.fee = fee !== undefined ? parseFloat(fee) : existingClient.fee;
+        existingClient.email = email || existingClient.email;
+        existingClient.phone = phone || existingClient.phone;
+        existingClient.address = address || existingClient.address;
+        existingClient.panNumber = panNumber || existingClient.panNumber;
+        existingClient.gstNumber = gstNumber || existingClient.gstNumber;
+        if (bankDetails) existingClient.bankDetails = bankDetails;
+        existingClient.isActive = true;
+        await existingClient.save();
+        return res.status(201).json(existingClient);
+      }
       return res.status(400).json({ message: 'Client ID already exists' });
     }
-    
+
     const client = new Client({
       clientId,
       name,
@@ -80,7 +96,7 @@ router.post('/', async (req, res) => {
       gstNumber,
       bankDetails
     });
-    
+
     await client.save();
     res.status(201).json(client);
   } catch (error) {
@@ -133,6 +149,9 @@ router.delete('/:id', async (req, res) => {
   try {
     const { permanent } = req.query;
     
+    // Delete all billing entries for this client
+    await BillingEntry.deleteMany({ clientId: req.params.id });
+
     if (permanent === 'true') {
       // Permanent delete
       const result = await Client.findOneAndDelete({ clientId: req.params.id });
@@ -147,6 +166,7 @@ router.delete('/:id', async (req, res) => {
         return res.status(404).json({ message: 'Client not found' });
       }
       client.isActive = false;
+      client.billingEntries = [];
       await client.save();
       res.json({ message: 'Client deactivated', client });
     }

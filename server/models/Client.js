@@ -53,6 +53,27 @@ const clientSchema = new mongoose.Schema({
     ifscCode: String,
     branch: String
   },
+  billingEntries: [{
+    entryId: { type: mongoose.Schema.Types.ObjectId, ref: 'BillingEntry' },
+    month: String,
+    monthLabel: String,
+    financialYear: {
+      startYear: Number,
+      endYear: Number
+    },
+    iprsAmt: { type: Number, default: 0 },
+    prsAmt: { type: Number, default: 0 },
+    soundExAmt: { type: Number, default: 0 },
+    isamraAmt: { type: Number, default: 0 },
+    ascapAmt: { type: Number, default: 0 },
+    pplAmt: { type: Number, default: 0 },
+    totalCommission: { type: Number, default: 0 },
+    gst: { type: Number, default: 0 },
+    totalInvoice: { type: Number, default: 0 },
+    invoiceStatus: { type: String, default: 'draft' },
+    status: { type: String, default: 'draft' },
+    createdAt: { type: Date, default: Date.now }
+  }],
   isActive: {
     type: Boolean,
     default: true

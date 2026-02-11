@@ -74,12 +74,20 @@ function appReducer(state, action) {
         ...state,
         clients: state.clients.map(c => c.clientId === action.payload.clientId ? action.payload : c),
       };
-    case ActionTypes.REMOVE_CLIENT:
+    case ActionTypes.REMOVE_CLIENT: {
+      const removedId = action.payload;
+      const cleanedEntries = { ...state.billingEntries };
+      Object.keys(cleanedEntries).forEach(key => {
+        if (key.startsWith(removedId + '_')) delete cleanedEntries[key];
+      });
       return {
         ...state,
-        clients: state.clients.filter(c => c.clientId !== action.payload),
-        selectedClient: state.selectedClient?.clientId === action.payload ? null : state.selectedClient,
+        clients: state.clients.filter(c => c.clientId !== removedId),
+        billingEntries: cleanedEntries,
+        selectedClient: state.selectedClient?.clientId === removedId ? null : state.selectedClient,
+        currentEntry: state.currentEntry?.clientId === removedId ? null : state.currentEntry,
       };
+    }
 
     case ActionTypes.SET_CURRENT_MONTH:
       return { ...state, currentMonth: action.payload };

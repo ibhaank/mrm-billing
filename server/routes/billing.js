@@ -120,15 +120,49 @@ router.post('/', async (req, res) => {
     
     // Upsert: create or update
     const entry = await BillingEntry.findOneAndUpdate(
-      { 
-        clientId, 
-        month, 
-        'financialYear.startYear': financialYear.startYear 
+      {
+        clientId,
+        month,
+        'financialYear.startYear': financialYear.startYear
       },
       entryData,
       { upsert: true, new: true, runValidators: true }
     );
-    
+
+    // Also save/update the entry in the Client's billingEntries array
+    const billingEntryForClient = {
+      entryId: entry._id,
+      month: entry.month,
+      monthLabel: entry.monthLabel,
+      financialYear: entry.financialYear,
+      iprsAmt: entry.iprsAmt,
+      prsAmt: entry.prsAmt,
+      soundExAmt: entry.soundExAmt,
+      isamraAmt: entry.isamraAmt,
+      ascapAmt: entry.ascapAmt,
+      pplAmt: entry.pplAmt,
+      totalCommission: entry.totalCommission,
+      gst: entry.gst,
+      totalInvoice: entry.totalInvoice,
+      invoiceStatus: entry.invoiceStatus,
+      status: entry.status,
+      createdAt: entry.createdAt
+    };
+
+    // Remove existing entry for same month/year, then push updated one
+    await Client.findOneAndUpdate(
+      { clientId },
+      {
+        $pull: { billingEntries: { month: entry.month, 'financialYear.startYear': financialYear.startYear } }
+      }
+    );
+    await Client.findOneAndUpdate(
+      { clientId },
+      {
+        $push: { billingEntries: billingEntryForClient }
+      }
+    );
+
     res.status(201).json(entry);
   } catch (error) {
     console.error('Error saving billing entry:', error);
@@ -146,11 +180,31 @@ router.put('/:id', async (req, res) => {
       { ...req.body, updatedAt: Date.now() },
       { new: true, runValidators: true }
     );
-    
+
     if (!entry) {
       return res.status(404).json({ message: 'Entry not found' });
     }
-    
+
+    // Also update the entry in the Client's billingEntries array
+    await Client.findOneAndUpdate(
+      { clientId: entry.clientId, 'billingEntries.entryId': entry._id },
+      {
+        $set: {
+          'billingEntries.$.iprsAmt': entry.iprsAmt,
+          'billingEntries.$.prsAmt': entry.prsAmt,
+          'billingEntries.$.soundExAmt': entry.soundExAmt,
+          'billingEntries.$.isamraAmt': entry.isamraAmt,
+          'billingEntries.$.ascapAmt': entry.ascapAmt,
+          'billingEntries.$.pplAmt': entry.pplAmt,
+          'billingEntries.$.totalCommission': entry.totalCommission,
+          'billingEntries.$.gst': entry.gst,
+          'billingEntries.$.totalInvoice': entry.totalInvoice,
+          'billingEntries.$.invoiceStatus': entry.invoiceStatus,
+          'billingEntries.$.status': entry.status
+        }
+      }
+    );
+
     res.json(entry);
   } catch (error) {
     console.error('Error updating billing entry:', error);
@@ -173,11 +227,19 @@ router.delete('/:clientId/:month', async (req, res) => {
       month,
       'financialYear.startYear': fy
     });
-    
+
     if (!result) {
       return res.status(404).json({ message: 'Entry not found' });
     }
-    
+
+    // Also remove the entry from the Client's billingEntries array
+    await Client.findOneAndUpdate(
+      { clientId },
+      {
+        $pull: { billingEntries: { entryId: result._id } }
+      }
+    );
+
     res.json({ message: 'Entry deleted successfully' });
   } catch (error) {
     console.error('Error deleting billing entry:', error);
