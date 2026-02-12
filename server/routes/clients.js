@@ -61,8 +61,8 @@ router.get('/:id', async (req, res) => {
 // @access  Public
 router.post('/', async (req, res) => {
   try {
-    const { clientId, name, type, fee, email, phone, address, panNumber, gstNumber, bankDetails } = req.body;
-    
+    const { clientId, name, type, clientType, fee, previousBalance, iprs, prs, isamra } = req.body;
+
     // Check if client ID already exists
     const existingClient = await Client.findOne({ clientId });
     if (existingClient) {
@@ -70,13 +70,12 @@ router.post('/', async (req, res) => {
       if (!existingClient.isActive) {
         existingClient.name = name || existingClient.name;
         existingClient.type = type || existingClient.type;
+        existingClient.clientType = clientType !== undefined ? clientType : existingClient.clientType;
         existingClient.fee = fee !== undefined ? parseFloat(fee) : existingClient.fee;
-        existingClient.email = email || existingClient.email;
-        existingClient.phone = phone || existingClient.phone;
-        existingClient.address = address || existingClient.address;
-        existingClient.panNumber = panNumber || existingClient.panNumber;
-        existingClient.gstNumber = gstNumber || existingClient.gstNumber;
-        if (bankDetails) existingClient.bankDetails = bankDetails;
+        existingClient.previousBalance = previousBalance !== undefined ? previousBalance : existingClient.previousBalance;
+        existingClient.iprs = iprs !== undefined ? iprs : existingClient.iprs;
+        existingClient.prs = prs !== undefined ? prs : existingClient.prs;
+        existingClient.isamra = isamra !== undefined ? isamra : existingClient.isamra;
         existingClient.isActive = true;
         await existingClient.save();
         return res.status(201).json(existingClient);
@@ -88,13 +87,12 @@ router.post('/', async (req, res) => {
       clientId,
       name,
       type: type || 'Other',
+      clientType: clientType || '',
       fee: parseFloat(fee) || 0.10,
-      email,
-      phone,
-      address,
-      panNumber,
-      gstNumber,
-      bankDetails
+      previousBalance: previousBalance || 0,
+      iprs: iprs || false,
+      prs: prs || false,
+      isamra: isamra || false
     });
 
     await client.save();
@@ -114,24 +112,23 @@ router.post('/', async (req, res) => {
 // @access  Public
 router.put('/:id', async (req, res) => {
   try {
-    const { name, type, fee, email, phone, address, panNumber, gstNumber, bankDetails, isActive } = req.body;
-    
+    const { name, type, clientType, fee, previousBalance, iprs, prs, isamra, isActive } = req.body;
+
     const client = await Client.findOne({ clientId: req.params.id });
-    
+
     if (!client) {
       return res.status(404).json({ message: 'Client not found' });
     }
-    
+
     // Update fields
     if (name) client.name = name;
     if (type) client.type = type;
+    if (clientType !== undefined) client.clientType = clientType;
     if (fee !== undefined) client.fee = parseFloat(fee);
-    if (email !== undefined) client.email = email;
-    if (phone !== undefined) client.phone = phone;
-    if (address !== undefined) client.address = address;
-    if (panNumber !== undefined) client.panNumber = panNumber;
-    if (gstNumber !== undefined) client.gstNumber = gstNumber;
-    if (bankDetails) client.bankDetails = bankDetails;
+    if (previousBalance !== undefined) client.previousBalance = previousBalance;
+    if (iprs !== undefined) client.iprs = iprs;
+    if (prs !== undefined) client.prs = prs;
+    if (isamra !== undefined) client.isamra = isamra;
     if (isActive !== undefined) client.isActive = isActive;
     
     await client.save();
@@ -166,7 +163,6 @@ router.delete('/:id', async (req, res) => {
         return res.status(404).json({ message: 'Client not found' });
       }
       client.isActive = false;
-      client.billingEntries = [];
       await client.save();
       res.json({ message: 'Client deactivated', client });
     }

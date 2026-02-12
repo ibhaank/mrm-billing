@@ -14,66 +14,37 @@ const clientSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['Composer', 'Film Composer', 'Lyricist', 'Music Director', 'Singer', 'Producer', 'Publisher', 'Other'],
+    trim: true,
     default: 'Composer'
+  },
+  clientType: {
+    type: String,
+    trim: true,
+    default: ''
   },
   fee: {
     type: Number,
     required: true,
     min: 0,
     max: 1,
-    default: 0.10 // 10% default service fee
+    default: 0.10
   },
-  email: {
-    type: String,
-    trim: true,
-    lowercase: true
+  previousBalance: {
+    type: Number,
+    default: 0
   },
-  phone: {
-    type: String,
-    trim: true
+  iprs: {
+    type: Boolean,
+    default: false
   },
-  address: {
-    type: String,
-    trim: true
+  prs: {
+    type: Boolean,
+    default: false
   },
-  panNumber: {
-    type: String,
-    trim: true,
-    uppercase: true
+  isamra: {
+    type: Boolean,
+    default: false
   },
-  gstNumber: {
-    type: String,
-    trim: true,
-    uppercase: true
-  },
-  bankDetails: {
-    bankName: String,
-    accountNumber: String,
-    ifscCode: String,
-    branch: String
-  },
-  billingEntries: [{
-    entryId: { type: mongoose.Schema.Types.ObjectId, ref: 'BillingEntry' },
-    month: String,
-    monthLabel: String,
-    financialYear: {
-      startYear: Number,
-      endYear: Number
-    },
-    iprsAmt: { type: Number, default: 0 },
-    prsAmt: { type: Number, default: 0 },
-    soundExAmt: { type: Number, default: 0 },
-    isamraAmt: { type: Number, default: 0 },
-    ascapAmt: { type: Number, default: 0 },
-    pplAmt: { type: Number, default: 0 },
-    totalCommission: { type: Number, default: 0 },
-    gst: { type: Number, default: 0 },
-    totalInvoice: { type: Number, default: 0 },
-    invoiceStatus: { type: String, default: 'draft' },
-    status: { type: String, default: 'draft' },
-    createdAt: { type: Date, default: Date.now }
-  }],
   isActive: {
     type: Boolean,
     default: true

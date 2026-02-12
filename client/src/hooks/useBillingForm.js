@@ -1,11 +1,14 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useApp } from '../contexts/AppContext';
+import { billingApi } from '../services/api';
 
 const initialFormState = {
   iprsAmt: '',
   prsGbp: '',
+  gbpToInrRate: '',
   prsAmt: '',
   soundExUsd: '',
+  usdToInrRate: '',
   soundExAmt: '',
   isamraAmt: '',
   ascapUsd: '',
@@ -20,6 +23,10 @@ const initialFormState = {
   totalCommission: 0,
   gst: 0,
   totalInvoice: 0,
+  previousOutstanding: '',
+  outstandingOperator: '+',
+  currentMonthOutstanding: '',
+  totalOutstanding: '',
   iprsRemarks: '',
   prsRemarks: '',
   invoiceDate: new Date().toISOString().split('T')[0],
@@ -34,10 +41,6 @@ export function useBillingForm() {
   // Service fee from selected client
   const serviceFee = selectedClient?.fee || 0;
 
-  // Exchange rates from settings
-  const gbpToInrRate = settings.gbpToInrRate || 110.50;
-  const usdToInrRate = settings.usdToInrRate || 83.50;
-
   // GST rate
   const gstRate = settings.gstRate || 0.18;
 
@@ -47,8 +50,10 @@ export function useBillingForm() {
       setFormData({
         iprsAmt: currentEntry.iprsAmt || '',
         prsGbp: currentEntry.prsGbp || '',
+        gbpToInrRate: currentEntry.gbpToInrRate || '',
         prsAmt: currentEntry.prsAmt || '',
         soundExUsd: currentEntry.soundExUsd || '',
+        usdToInrRate: currentEntry.usdToInrRate || '',
         soundExAmt: currentEntry.soundExAmt || '',
         isamraAmt: currentEntry.isamraAmt || '',
         ascapUsd: currentEntry.ascapUsd || '',
@@ -63,6 +68,10 @@ export function useBillingForm() {
         totalCommission: currentEntry.totalCommission || 0,
         gst: currentEntry.gst || 0,
         totalInvoice: currentEntry.totalInvoice || 0,
+        previousOutstanding: currentEntry.previousOutstanding || '',
+        outstandingOperator: currentEntry.outstandingOperator || '+',
+        currentMonthOutstanding: currentEntry.currentMonthOutstanding || '',
+        totalOutstanding: currentEntry.totalOutstanding || '',
         iprsRemarks: currentEntry.iprsRemarks || '',
         prsRemarks: currentEntry.prsRemarks || '',
         invoiceDate: currentEntry.invoiceDate
@@ -75,22 +84,30 @@ export function useBillingForm() {
       // Clear form when no entry exists for this client/month combination
       setFormData(initialFormState);
       setIsDirty(false);
+
+      // Auto-fetch previous month's total outstanding
+      if (selectedClient && currentMonth) {
+        const fy = settings.financialYear?.startYear;
+        billingApi.getPreviousOutstanding(selectedClient.clientId, currentMonth, fy)
+          .then(res => {
+            const prevOutstanding = res.data.totalOutstanding;
+            if (prevOutstanding) {
+              setFormData(prev => ({ ...prev, previousOutstanding: prevOutstanding }));
+            }
+          })
+          .catch(() => {}); // silently ignore if no previous entry
+      }
     }
-  }, [currentEntry, selectedClient, currentMonth]);
+  }, [currentEntry, selectedClient, currentMonth, settings.financialYear]);
 
   // Calculate derived values
   const calculations = useMemo(() => {
     const iprsAmt = parseFloat(formData.iprsAmt) || 0;
-    const prsGbp = parseFloat(formData.prsGbp) || 0;
-    const soundExUsd = parseFloat(formData.soundExUsd) || 0;
+    const prsAmt = parseFloat(formData.prsAmt) || 0;
+    const soundExAmt = parseFloat(formData.soundExAmt) || 0;
     const isamraAmt = parseFloat(formData.isamraAmt) || 0;
-    const ascapUsd = parseFloat(formData.ascapUsd) || 0;
+    const ascapAmt = parseFloat(formData.ascapAmt) || 0;
     const pplAmt = parseFloat(formData.pplAmt) || 0;
-
-    // Currency conversions
-    const prsAmt = prsGbp * gbpToInrRate;
-    const soundExAmt = soundExUsd * usdToInrRate;
-    const ascapAmt = ascapUsd * usdToInrRate;
 
     // Commissions
     const iprsComis = iprsAmt * serviceFee;
@@ -106,9 +123,6 @@ export function useBillingForm() {
     const totalInvoice = totalCommission + gst;
 
     return {
-      prsAmt,
-      soundExAmt,
-      ascapAmt,
       iprsComis,
       prsComis,
       soundExComis,
@@ -119,8 +133,8 @@ export function useBillingForm() {
       gst,
       totalInvoice,
     };
-  }, [formData.iprsAmt, formData.prsGbp, formData.soundExUsd, formData.isamraAmt,
-      formData.ascapUsd, formData.pplAmt, gbpToInrRate, usdToInrRate, serviceFee, gstRate]);
+  }, [formData.iprsAmt, formData.prsAmt, formData.soundExAmt, formData.isamraAmt,
+      formData.ascapAmt, formData.pplAmt, serviceFee, gstRate]);
 
   // Update field
   const updateField = useCallback((field, value) => {
@@ -128,11 +142,34 @@ export function useBillingForm() {
     setIsDirty(true);
   }, []);
 
-  // Handle input change
+  // Handle input change - auto-calculate INR when currency or rate changes
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
-    updateField(name, value);
-  }, [updateField]);
+    setFormData(prev => {
+      const next = { ...prev, [name]: value };
+
+      if (name === 'prsGbp' || name === 'gbpToInrRate') {
+        const gbp = parseFloat(next.prsGbp) || 0;
+        const rate = parseFloat(next.gbpToInrRate) || 0;
+        next.prsAmt = gbp && rate ? (gbp * rate).toFixed(2) : prev.prsAmt;
+      }
+
+      if (name === 'soundExUsd' || name === 'usdToInrRate') {
+        const usd = parseFloat(next.soundExUsd) || 0;
+        const rate = parseFloat(next.usdToInrRate) || 0;
+        next.soundExAmt = usd && rate ? (usd * rate).toFixed(2) : prev.soundExAmt;
+      }
+
+      if (name === 'ascapUsd' || name === 'usdToInrRate') {
+        const usd = parseFloat(next.ascapUsd) || 0;
+        const rate = parseFloat(next.usdToInrRate) || 0;
+        next.ascapAmt = usd && rate ? (usd * rate).toFixed(2) : prev.ascapAmt;
+      }
+
+      return next;
+    });
+    setIsDirty(true);
+  }, []);
 
   // Clear form
   const clearForm = useCallback(() => {
@@ -189,8 +226,6 @@ export function useBillingForm() {
     calculations,
     isDirty,
     serviceFee,
-    gbpToInrRate,
-    usdToInrRate,
     handleInputChange,
     updateField,
     clearForm,

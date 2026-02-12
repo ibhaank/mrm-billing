@@ -30,8 +30,6 @@ function BillingForm() {
     handleDelete,
     status,
     serviceFee,
-    gbpToInrRate,
-    usdToInrRate,
   } = useBillingForm();
 
   const { financialYear } = settings;
@@ -156,15 +154,30 @@ function BillingForm() {
                 />
               </div>
             </div>
-            <div className="input-group calculated">
+            <div className="input-group">
+              <label>GBP to INR Rate</label>
+              <div className="input-prefix">
+                <span>₹</span>
+                <input
+                  type="number"
+                  name="gbpToInrRate"
+                  value={formData.gbpToInrRate}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
+                  step="0.01"
+                />
+              </div>
+            </div>
+            <div className="input-group">
               <label>PRS Amount (₹)</label>
               <div className="input-prefix">
                 <span>₹</span>
                 <input
                   type="number"
-                  value={calculations.prsAmt.toFixed(2)}
-                  readOnly
-                  title={`£1 = ₹${gbpToInrRate}`}
+                  name="prsAmt"
+                  value={formData.prsAmt}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
                 />
               </div>
             </div>
@@ -181,15 +194,30 @@ function BillingForm() {
                 />
               </div>
             </div>
-            <div className="input-group calculated">
+            <div className="input-group">
+              <label>USD to INR Rate</label>
+              <div className="input-prefix">
+                <span>₹</span>
+                <input
+                  type="number"
+                  name="usdToInrRate"
+                  value={formData.usdToInrRate}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
+                  step="0.01"
+                />
+              </div>
+            </div>
+            <div className="input-group">
               <label>Sound Exchange (₹)</label>
               <div className="input-prefix">
                 <span>₹</span>
                 <input
                   type="number"
-                  value={calculations.soundExAmt.toFixed(2)}
-                  readOnly
-                  title={`$1 = ₹${usdToInrRate}`}
+                  name="soundExAmt"
+                  value={formData.soundExAmt}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
                 />
               </div>
             </div>
@@ -219,15 +247,16 @@ function BillingForm() {
                 />
               </div>
             </div>
-            <div className="input-group calculated">
+            <div className="input-group">
               <label>ASCAP Amount (₹)</label>
               <div className="input-prefix">
                 <span>₹</span>
                 <input
                   type="number"
-                  value={calculations.ascapAmt.toFixed(2)}
-                  readOnly
-                  title={`$1 = ₹${usdToInrRate}`}
+                  name="ascapAmt"
+                  value={formData.ascapAmt}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
                 />
               </div>
             </div>
@@ -382,6 +411,112 @@ function BillingForm() {
           </div>
         </div>
 
+        {/* Outstanding Section */}
+        <div className="section">
+          <div className="section-header">
+            <div className="section-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            </div>
+            <div>
+              <div className="section-title">Outstanding</div>
+              <div className="section-subtitle">Track outstanding payments</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
+            <div className="input-group" style={{ flex: 1, minWidth: 140 }}>
+              <label>Previous Outstanding (₹)</label>
+              <div className="input-prefix">
+                <span>₹</span>
+                <input
+                  type="number"
+                  name="previousOutstanding"
+                  value={formData.previousOutstanding}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+            <select
+              name="outstandingOperator"
+              value={formData.outstandingOperator || '+'}
+              onChange={handleInputChange}
+              style={{
+                width: 50,
+                height: 44,
+                textAlign: 'center',
+                fontSize: 18,
+                fontWeight: 'bold',
+                borderRadius: 8,
+                border: '1px solid var(--border)',
+                background: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                marginBottom: 0,
+              }}
+            >
+              <option value="+">+</option>
+              <option value="-">−</option>
+            </select>
+            <div className="input-group" style={{ flex: 1, minWidth: 140 }}>
+              <label>Current Month Outstanding (₹)</label>
+              <div className="input-prefix">
+                <span>₹</span>
+                <input
+                  type="number"
+                  name="currentMonthOutstanding"
+                  value={formData.currentMonthOutstanding}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary"
+              style={{
+                height: 44,
+                width: 44,
+                minWidth: 'auto',
+                padding: 0,
+                fontSize: 20,
+                fontWeight: 'bold',
+                borderRadius: 8,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 0,
+              }}
+              onClick={() => {
+                const prev = parseFloat(formData.previousOutstanding) || 0;
+                const curr = parseFloat(formData.currentMonthOutstanding) || 0;
+                const op = formData.outstandingOperator || '+';
+                const total = op === '+' ? prev + curr : prev - curr;
+                handleInputChange({
+                  target: { name: 'totalOutstanding', value: total.toFixed(2) }
+                });
+              }}
+              title="Calculate Total Outstanding"
+            >
+              =
+            </button>
+            <div className="input-group" style={{ flex: 1, minWidth: 140 }}>
+              <label>Total Outstanding (₹)</label>
+              <div className="input-prefix">
+                <span>₹</span>
+                <input
+                  type="number"
+                  name="totalOutstanding"
+                  value={formData.totalOutstanding}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Summary Card */}
         <div className="summary-card">
           <div className="summary-header">
@@ -405,8 +540,8 @@ function BillingForm() {
               <div className="value">{formatCurrency(calculations.totalInvoice)}</div>
             </div>
             <div className="summary-item">
-              <div className="label">Monthly Outstanding</div>
-              <div className="value">{formatCurrency(calculations.totalInvoice)}</div>
+              <div className="label">Total Outstanding</div>
+              <div className="value">{formatCurrency(parseFloat(formData.totalOutstanding) || 0)}</div>
             </div>
           </div>
         </div>

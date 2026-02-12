@@ -99,8 +99,10 @@ export const billingApi = {
     if (financialYear) params.append('financialYear', financialYear);
     return api.get(`/billing/reports/summary?${params.toString()}`);
   },
-  getClientReport: (clientId, financialYear) => 
+  getClientReport: (clientId, financialYear) =>
     api.get(`/billing/reports/client/${clientId}${financialYear ? `?financialYear=${financialYear}` : ''}`),
+  getPreviousOutstanding: (clientId, month, financialYear) =>
+    api.get(`/billing/previous-outstanding/${clientId}/${month}${financialYear ? `?financialYear=${financialYear}` : ''}`),
 };
 
 // Settings API

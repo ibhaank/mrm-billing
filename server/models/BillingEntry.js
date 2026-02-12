@@ -49,6 +49,12 @@ const billingEntrySchema = new mongoose.Schema({
   gst: { type: Number, default: 0 },
   totalInvoice: { type: Number, default: 0 },
   
+  // Outstanding
+  previousOutstanding: { type: Number, default: 0 },
+  outstandingOperator: { type: String, enum: ['+', '-'], default: '+' },
+  currentMonthOutstanding: { type: Number, default: 0 },
+  totalOutstanding: { type: Number, default: 0 },
+
   // Remarks
   iprsRemarks: { type: String, default: '' },
   prsRemarks: { type: String, default: '' },

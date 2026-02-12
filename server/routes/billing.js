@@ -62,6 +62,39 @@ router.get('/:clientId/:month', async (req, res) => {
   }
 });
 
+// Month order for financial year (Apr to Mar)
+const monthOrder = ['apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec', 'jan', 'feb', 'mar'];
+
+// @route   GET /api/billing/previous-outstanding/:clientId/:month
+// @desc    Get previous month's total outstanding for a client
+// @access  Public
+router.get('/previous-outstanding/:clientId/:month', async (req, res) => {
+  try {
+    const { clientId, month } = req.params;
+    const { financialYear } = req.query;
+
+    const fy = financialYear ? parseInt(financialYear) : (await Settings.getSetting('financialYear')).startYear;
+
+    const currentMonthIndex = monthOrder.indexOf(month);
+    if (currentMonthIndex <= 0) {
+      // April (first month) or invalid — no previous month in this FY
+      return res.json({ totalOutstanding: 0 });
+    }
+
+    const prevMonth = monthOrder[currentMonthIndex - 1];
+    const entry = await BillingEntry.findOne({
+      clientId,
+      month: prevMonth,
+      'financialYear.startYear': fy
+    });
+
+    res.json({ totalOutstanding: entry?.totalOutstanding || 0 });
+  } catch (error) {
+    console.error('Error fetching previous outstanding:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // @route   POST /api/billing
 // @desc    Create or update a billing entry
 // @access  Public
@@ -72,12 +105,21 @@ router.post('/', async (req, res) => {
       month,
       iprsAmt,
       prsGbp,
+      gbpToInrRate: reqGbpToInrRate,
+      prsAmt: reqPrsAmt,
+      soundExUsd,
+      usdToInrRate: reqUsdToInrRate,
       soundExAmt,
       isamraAmt,
+      ascapUsd,
       ascapAmt,
       pplAmt,
       iprsRemarks,
       prsRemarks,
+      previousOutstanding,
+      outstandingOperator,
+      currentMonthOutstanding,
+      totalOutstanding,
       invoiceDate,
       invoiceStatus,
       status
@@ -91,10 +133,11 @@ router.post('/', async (req, res) => {
     
     // Get settings
     const financialYear = await Settings.getSetting('financialYear');
-    const gbpToInrRate = await Settings.getSetting('gbpToInrRate');
-    
-    // Calculate PRS in INR
-    const prsAmt = (prsGbp || 0) * gbpToInrRate;
+
+    // All amounts in INR are now entered manually
+    const prsAmt = reqPrsAmt || 0;
+    const gbpToInrRate = reqGbpToInrRate || 0;
+    const usdToInrRate = reqUsdToInrRate || 0;
     
     const entryData = {
       clientId,
@@ -105,17 +148,24 @@ router.post('/', async (req, res) => {
       iprsAmt: iprsAmt || 0,
       prsGbp: prsGbp || 0,
       prsAmt,
+      soundExUsd: soundExUsd || 0,
       soundExAmt: soundExAmt || 0,
       isamraAmt: isamraAmt || 0,
+      ascapUsd: ascapUsd || 0,
       ascapAmt: ascapAmt || 0,
       pplAmt: pplAmt || 0,
       serviceFee: client.fee,
       iprsRemarks: iprsRemarks || '',
       prsRemarks: prsRemarks || '',
+      previousOutstanding: previousOutstanding || 0,
+      outstandingOperator: outstandingOperator || '+',
+      currentMonthOutstanding: currentMonthOutstanding || 0,
+      totalOutstanding: totalOutstanding || 0,
       invoiceDate: invoiceDate || new Date(),
       invoiceStatus: invoiceStatus || 'draft',
       status: status || 'draft',
-      gbpToInrRate
+      gbpToInrRate,
+      usdToInrRate
     };
     
     // Upsert: create or update
@@ -127,40 +177,6 @@ router.post('/', async (req, res) => {
       },
       entryData,
       { upsert: true, new: true, runValidators: true }
-    );
-
-    // Also save/update the entry in the Client's billingEntries array
-    const billingEntryForClient = {
-      entryId: entry._id,
-      month: entry.month,
-      monthLabel: entry.monthLabel,
-      financialYear: entry.financialYear,
-      iprsAmt: entry.iprsAmt,
-      prsAmt: entry.prsAmt,
-      soundExAmt: entry.soundExAmt,
-      isamraAmt: entry.isamraAmt,
-      ascapAmt: entry.ascapAmt,
-      pplAmt: entry.pplAmt,
-      totalCommission: entry.totalCommission,
-      gst: entry.gst,
-      totalInvoice: entry.totalInvoice,
-      invoiceStatus: entry.invoiceStatus,
-      status: entry.status,
-      createdAt: entry.createdAt
-    };
-
-    // Remove existing entry for same month/year, then push updated one
-    await Client.findOneAndUpdate(
-      { clientId },
-      {
-        $pull: { billingEntries: { month: entry.month, 'financialYear.startYear': financialYear.startYear } }
-      }
-    );
-    await Client.findOneAndUpdate(
-      { clientId },
-      {
-        $push: { billingEntries: billingEntryForClient }
-      }
     );
 
     res.status(201).json(entry);
@@ -184,26 +200,6 @@ router.put('/:id', async (req, res) => {
     if (!entry) {
       return res.status(404).json({ message: 'Entry not found' });
     }
-
-    // Also update the entry in the Client's billingEntries array
-    await Client.findOneAndUpdate(
-      { clientId: entry.clientId, 'billingEntries.entryId': entry._id },
-      {
-        $set: {
-          'billingEntries.$.iprsAmt': entry.iprsAmt,
-          'billingEntries.$.prsAmt': entry.prsAmt,
-          'billingEntries.$.soundExAmt': entry.soundExAmt,
-          'billingEntries.$.isamraAmt': entry.isamraAmt,
-          'billingEntries.$.ascapAmt': entry.ascapAmt,
-          'billingEntries.$.pplAmt': entry.pplAmt,
-          'billingEntries.$.totalCommission': entry.totalCommission,
-          'billingEntries.$.gst': entry.gst,
-          'billingEntries.$.totalInvoice': entry.totalInvoice,
-          'billingEntries.$.invoiceStatus': entry.invoiceStatus,
-          'billingEntries.$.status': entry.status
-        }
-      }
-    );
 
     res.json(entry);
   } catch (error) {
@@ -231,14 +227,6 @@ router.delete('/:clientId/:month', async (req, res) => {
     if (!result) {
       return res.status(404).json({ message: 'Entry not found' });
     }
-
-    // Also remove the entry from the Client's billingEntries array
-    await Client.findOneAndUpdate(
-      { clientId },
-      {
-        $pull: { billingEntries: { entryId: result._id } }
-      }
-    );
 
     res.json({ message: 'Entry deleted successfully' });
   } catch (error) {
