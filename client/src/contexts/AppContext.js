@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
-import { clientApi, billingApi, settingsApi } from '../services/api';
+import { clientApi, royaltyApi, settingsApi } from '../services/api';
 
 // Initial state
 const initialState = {
@@ -9,7 +9,7 @@ const initialState = {
   clientsLoading: false,
   clientsError: null,
 
-  // Billing
+  // Royalty Accounting
   currentMonth: 'apr',
   billingEntries: {},
   currentEntry: null,
@@ -19,8 +19,6 @@ const initialState = {
   // Settings
   settings: {
     financialYear: { startYear: 2025, endYear: 2026 },
-    gbpToInrRate: 110.50,
-    gstRate: 0.18,
   },
   settingsLoading: false,
 
@@ -60,7 +58,7 @@ const ActionTypes = {
 function appReducer(state, action) {
   switch (action.type) {
     case ActionTypes.SET_CLIENTS:
-      return { ...state, clients: action.payload, clientsLoading: false };
+      return { ...state, clients: [...action.payload].sort((a, b) => (parseInt(a.clientId?.match(/(\d+)/)?.[1], 10) || 0) - (parseInt(b.clientId?.match(/(\d+)/)?.[1], 10) || 0)), clientsLoading: false };
     case ActionTypes.SET_SELECTED_CLIENT:
       return { ...state, selectedClient: action.payload };
     case ActionTypes.SET_CLIENTS_LOADING:
@@ -68,7 +66,7 @@ function appReducer(state, action) {
     case ActionTypes.SET_CLIENTS_ERROR:
       return { ...state, clientsError: action.payload, clientsLoading: false };
     case ActionTypes.ADD_CLIENT:
-      return { ...state, clients: [...state.clients, action.payload].sort((a, b) => (parseInt(a.clientId?.split('-')[1], 10) || 0) - (parseInt(b.clientId?.split('-')[1], 10) || 0)) };
+      return { ...state, clients: [...state.clients, action.payload].sort((a, b) => (parseInt(a.clientId?.match(/(\d+)/)?.[1], 10) || 0) - (parseInt(b.clientId?.match(/(\d+)/)?.[1], 10) || 0)) };
     case ActionTypes.UPDATE_CLIENT:
       return {
         ...state,
@@ -103,10 +101,11 @@ function appReducer(state, action) {
           [action.payload.key]: action.payload.entry,
         },
       };
-    case ActionTypes.DELETE_ENTRY:
+    case ActionTypes.DELETE_ENTRY: {
       const newEntries = { ...state.billingEntries };
       delete newEntries[action.payload];
       return { ...state, billingEntries: newEntries };
+    }
     case ActionTypes.SET_BILLING_LOADING:
       return { ...state, billingLoading: action.payload };
     case ActionTypes.SET_BILLING_ERROR:
@@ -160,10 +159,11 @@ export function AppProvider({ children }) {
         const clientsRes = await clientApi.getAll();
         dispatch({ type: ActionTypes.SET_CLIENTS, payload: clientsRes.data });
 
-        // Load billing entries
+        // Load royalty accounting entries for current FY
         dispatch({ type: ActionTypes.SET_BILLING_LOADING, payload: true });
-        const billingRes = await billingApi.getAll();
-        const entriesMap = billingRes.data.reduce((acc, entry) => {
+        const fy = settingsRes.data.financialYear?.startYear || 2025;
+        const entriesRes = await royaltyApi.getAll({ financialYear: fy });
+        const entriesMap = entriesRes.data.reduce((acc, entry) => {
           const key = `${entry.clientId}_${entry.month}`;
           acc[key] = entry;
           return acc;
@@ -192,7 +192,6 @@ export function AppProvider({ children }) {
 
   const selectClient = useCallback((client) => {
     dispatch({ type: ActionTypes.SET_SELECTED_CLIENT, payload: client });
-    // Load entry for current month if exists
     if (client) {
       const key = `${client.clientId}_${state.currentMonth}`;
       dispatch({ type: ActionTypes.SET_CURRENT_ENTRY, payload: state.billingEntries[key] || null });
@@ -237,31 +236,54 @@ export function AppProvider({ children }) {
   // Month actions
   const setCurrentMonth = useCallback((month) => {
     dispatch({ type: ActionTypes.SET_CURRENT_MONTH, payload: month });
-    // Update current entry for selected client
     if (state.selectedClient) {
       const key = `${state.selectedClient.clientId}_${month}`;
       dispatch({ type: ActionTypes.SET_CURRENT_ENTRY, payload: state.billingEntries[key] || null });
     }
   }, [state.selectedClient, state.billingEntries]);
 
-  // Billing actions
+  // Entry actions
   const saveEntry = useCallback(async (entryData, status = 'draft') => {
     try {
-      const res = await billingApi.saveEntry({ ...entryData, status });
+      const res = await royaltyApi.saveEntry({ ...entryData, status });
+      const responseData = res.data;
+
+      // Handle new response format: { entry, cascadedEntries }
+      const savedEntry = responseData.entry || responseData;
       const key = `${entryData.clientId}_${entryData.month}`;
-      dispatch({ type: ActionTypes.UPDATE_ENTRY, payload: { key, entry: res.data } });
-      dispatch({ type: ActionTypes.SET_CURRENT_ENTRY, payload: res.data });
+      dispatch({ type: ActionTypes.UPDATE_ENTRY, payload: { key, entry: savedEntry } });
+      dispatch({ type: ActionTypes.SET_CURRENT_ENTRY, payload: savedEntry });
+
+      // Update any cascaded entries in the store
+      if (responseData.cascadedEntries && responseData.cascadedEntries.length > 0) {
+        responseData.cascadedEntries.forEach(cascadedEntry => {
+          const cascadedKey = `${cascadedEntry.clientId}_${cascadedEntry.month}`;
+          dispatch({ type: ActionTypes.UPDATE_ENTRY, payload: { key: cascadedKey, entry: cascadedEntry } });
+        });
+      }
+
+      // Sync commissionRate back to client if it changed
+      const client = state.clients.find(c => c.clientId === entryData.clientId);
+      if (client && entryData.commissionRate !== undefined && entryData.commissionRate !== client.commissionRate) {
+        try {
+          const updatedClient = await clientApi.update(entryData.clientId, { commissionRate: entryData.commissionRate });
+          dispatch({ type: ActionTypes.UPDATE_CLIENT, payload: updatedClient.data });
+        } catch (err) {
+          console.error('Failed to sync commission rate to client:', err);
+        }
+      }
+
       showToast(status === 'draft' ? 'Draft saved!' : 'Entry submitted!');
-      return res.data;
+      return savedEntry;
     } catch (error) {
       showToast(error.response?.data?.message || 'Error saving entry', 'error');
       throw error;
     }
-  }, [showToast]);
+  }, [showToast, state.clients]);
 
   const deleteEntry = useCallback(async (clientId, month) => {
     try {
-      await billingApi.deleteEntry(clientId, month);
+      await royaltyApi.deleteEntry(clientId, month);
       const key = `${clientId}_${month}`;
       dispatch({ type: ActionTypes.DELETE_ENTRY, payload: key });
       dispatch({ type: ActionTypes.SET_CURRENT_ENTRY, payload: null });
@@ -287,28 +309,6 @@ export function AppProvider({ children }) {
     }
   }, [showToast]);
 
-  const updateExchangeRate = useCallback(async (rate) => {
-    try {
-      await settingsApi.updateExchangeRate(rate);
-      dispatch({ type: ActionTypes.UPDATE_SETTING, payload: { key: 'gbpToInrRate', value: rate } });
-      showToast(`Exchange rate updated: £1 = ₹${rate.toFixed(2)}`);
-    } catch (error) {
-      showToast('Error updating exchange rate', 'error');
-      throw error;
-    }
-  }, [showToast]);
-
-  const updateUsdExchangeRate = useCallback(async (rate) => {
-    try {
-      await settingsApi.updateUsdExchangeRate(rate);
-      dispatch({ type: ActionTypes.UPDATE_SETTING, payload: { key: 'usdToInrRate', value: rate } });
-      showToast(`USD exchange rate updated: $1 = ₹${rate.toFixed(2)}`);
-    } catch (error) {
-      showToast('Error updating USD exchange rate', 'error');
-      throw error;
-    }
-  }, [showToast]);
-
   // Modal actions
   const openModal = useCallback((modalName) => {
     dispatch({ type: ActionTypes.SET_ACTIVE_MODAL, payload: modalName });
@@ -320,22 +320,15 @@ export function AppProvider({ children }) {
 
   const value = {
     ...state,
-    // Client actions
     fetchClients,
     selectClient,
     addClient,
     updateClient,
     removeClient,
-    // Month actions
     setCurrentMonth,
-    // Billing actions
     saveEntry,
     deleteEntry,
-    // Settings actions
     updateFinancialYear,
-    updateExchangeRate,
-    updateUsdExchangeRate,
-    // UI actions
     showToast,
     openModal,
     closeModal,

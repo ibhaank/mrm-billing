@@ -1,6 +1,20 @@
 import React, { useState } from 'react';
 import { useApp } from '../contexts/AppContext';
 
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(amount || 0);
+};
+
+const monthLabels = {
+  apr: 'April', may: 'May', jun: 'June', jul: 'July',
+  aug: 'August', sep: 'September', oct: 'October', nov: 'November',
+  dec: 'December', jan: 'January', feb: 'February', mar: 'March',
+};
+
 // Add Client Modal
 function AddClientModal({ onClose }) {
   const { addClient, showToast } = useApp();
@@ -21,9 +35,11 @@ function AddClientModal({ onClose }) {
 
     setLoading(true);
     try {
+      const fee = parseFloat(formData.fee);
       await addClient({
         ...formData,
-        fee: parseFloat(formData.fee),
+        fee,
+        commissionRate: fee * 100,
       });
       onClose();
     } catch (error) {
@@ -247,18 +263,10 @@ function ViewEntriesModal({ onClose }) {
   const { billingEntries } = useApp();
   const entries = Object.values(billingEntries);
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   return (
     <div className="modal" style={{ maxWidth: 800 }}>
       <div className="modal-header">
-        <h3>All Billing Entries</h3>
+        <h3>All Royalty Accounting Entries</h3>
         <button className="modal-close" onClick={onClose}>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -270,7 +278,7 @@ function ViewEntriesModal({ onClose }) {
         {entries.length === 0 ? (
           <div className="empty-state">
             <h3>No Entries Yet</h3>
-            <p>Start by selecting a client and entering billing data</p>
+            <p>Start by selecting a client and entering royalty accounting data</p>
           </div>
         ) : (
           <div style={{ maxHeight: 400, overflowY: 'auto' }}>
@@ -301,15 +309,18 @@ function ViewEntriesModal({ onClose }) {
                     {entry.status || 'draft'}
                   </span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, fontSize: 13 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, fontSize: 13 }}>
                   <span style={{ color: 'var(--text-secondary)' }}>
-                    Month: <strong style={{ color: 'var(--text-primary)' }}>{entry.monthLabel}</strong>
+                    Month: <strong style={{ color: 'var(--text-primary)' }}>{monthLabels[entry.month]} {entry.year}</strong>
                   </span>
                   <span style={{ color: 'var(--text-secondary)' }}>
                     Commission: <strong style={{ color: 'var(--text-primary)' }}>{formatCurrency(entry.totalCommission)}</strong>
                   </span>
                   <span style={{ color: 'var(--text-secondary)' }}>
-                    Invoice: <strong style={{ color: 'var(--accent-blue)' }}>{formatCurrency(entry.totalInvoice)}</strong>
+                    Monthly O/S: <strong style={{ color: 'var(--text-primary)' }}>{formatCurrency(entry.monthlyOutstanding)}</strong>
+                  </span>
+                  <span style={{ color: 'var(--text-secondary)' }}>
+                    Total O/S: <strong style={{ color: 'var(--accent-blue)' }}>{formatCurrency(entry.totalOutstanding)}</strong>
                   </span>
                 </div>
               </div>
@@ -330,32 +341,32 @@ function ExportModal({ onClose }) {
   const entries = Object.values(billingEntries);
 
   const exportAllData = () => {
-    let csv = 'Client ID,Client Name,Month,IPRS,PRS GBP,PRS INR,Sound Ex,ISAMRA,ASCAP,PPL,Total Commission,GST,Total Invoice,Status\n';
-    
+    let csv = 'Client ID,Client Name,Month,Year,Commission Rate,IPRS,PRS,Sound Exchange,ISAMRA,ASCAP,PPL,Total Commission,Monthly Outstanding,Total Outstanding,Status\n';
+
     entries.forEach(e => {
-      csv += `${e.clientId},"${e.clientName}","${e.monthLabel}",${e.iprsAmt || 0},${e.prsGbp || 0},${e.prsAmt || 0},${e.soundExAmt || 0},${e.isamraAmt || 0},${e.ascapAmt || 0},${e.pplAmt || 0},${e.totalCommission || 0},${e.gst || 0},${e.totalInvoice || 0},${e.status}\n`;
+      csv += `${e.clientId},"${e.clientName}","${monthLabels[e.month]}",${e.year},${e.commissionRate || 0}%,${e.iprsAmount || 0},${e.prsAmount || 0},${e.soundExchangeAmount || 0},${e.isamraAmount || 0},${e.ascapAmount || 0},${e.pplAmount || 0},${e.totalCommission || 0},${e.monthlyOutstanding || 0},${e.totalOutstanding || 0},${e.status}\n`;
     });
-    
+
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `MRM_All_Data_Export_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `MRM_Royalty_Accounting_Export_${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
+
     showToast('Data exported successfully!');
   };
 
   const exportClients = () => {
     let csv = 'Client ID,Client Name,Type,Service Fee\n';
-    
+
     clients.forEach(client => {
       csv += `${client.clientId},"${client.name}","${client.type}",${(client.fee * 100).toFixed(0)}%\n`;
     });
-    
+
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -365,7 +376,7 @@ function ExportModal({ onClose }) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
+
     showToast('Clients exported successfully!');
   };
 
@@ -385,8 +396,8 @@ function ExportModal({ onClose }) {
           Choose what data you want to export as CSV file.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <button 
-            className="btn btn-secondary" 
+          <button
+            className="btn btn-secondary"
             style={{ justifyContent: 'flex-start', padding: '16px 20px' }}
             onClick={exportAllData}
           >
@@ -395,12 +406,12 @@ function ExportModal({ onClose }) {
               <polyline points="14 2 14 8 20 8"></polyline>
             </svg>
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontWeight: 600 }}>Export All Billing Data</div>
+              <div style={{ fontWeight: 600 }}>Export All Royalty Accounting Data</div>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{entries.length} entries</div>
             </div>
           </button>
-          <button 
-            className="btn btn-secondary" 
+          <button
+            className="btn btn-secondary"
             style={{ justifyContent: 'flex-start', padding: '16px 20px' }}
             onClick={exportClients}
           >

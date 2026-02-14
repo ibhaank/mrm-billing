@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
+const dns = require('dns');
 const User = require('../models/User');
 require('dotenv').config();
+
+dns.setServers(['1.1.1.1', '8.8.8.8']);
 
 async function createAdminUser() {
   try {

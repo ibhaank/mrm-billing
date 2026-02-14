@@ -60,7 +60,7 @@ function ClientPanel() {
                 onClick={() => selectClient(client)}
               >
                 <div className="client-name">{client.name}</div>
-                <div className="client-type">{client.type} • {(client.fee * 100).toFixed(0)}% Fee</div>
+                <div className="client-type">{client.type} • {client.commissionRate ?? (client.fee * 100).toFixed(0)}% Commission</div>
                 <div className="client-id">{client.clientId}</div>
               </div>
             );

@@ -6,7 +6,7 @@ const connectDB = require('./config/db');
 // Import routes
 const authRoutes = require('./routes/auth');
 const clientRoutes = require('./routes/clients');
-const billingRoutes = require('./routes/billing');
+const royaltyAccountingRoutes = require('./routes/royaltyAccounting');
 const settingsRoutes = require('./routes/settings');
 
 // Import models for initialization
@@ -37,7 +37,7 @@ if (process.env.NODE_ENV !== 'production') {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
-app.use('/api/billing', billingRoutes);
+app.use('/api/royalty-accounting', royaltyAccountingRoutes);
 app.use('/api/settings', settingsRoutes);
 
 // Health check endpoint

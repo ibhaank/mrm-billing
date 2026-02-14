@@ -81,28 +81,27 @@ export const clientApi = {
   bulkImport: (clients) => api.post('/clients/bulk', { clients }),
 };
 
-// Billing API
-export const billingApi = {
+// Royalty Accounting API
+export const royaltyApi = {
   getAll: (filters = {}) => {
     const params = new URLSearchParams(filters).toString();
-    return api.get(`/billing${params ? `?${params}` : ''}`);
+    return api.get(`/royalty-accounting${params ? `?${params}` : ''}`);
   },
-  getEntry: (clientId, month, financialYear) => 
-    api.get(`/billing/${clientId}/${month}${financialYear ? `?financialYear=${financialYear}` : ''}`),
-  saveEntry: (entryData) => api.post('/billing', entryData),
-  updateEntry: (id, entryData) => api.put(`/billing/${id}`, entryData),
-  deleteEntry: (clientId, month, financialYear) => 
-    api.delete(`/billing/${clientId}/${month}${financialYear ? `?financialYear=${financialYear}` : ''}`),
-  getSummary: (month, financialYear) => {
+  getEntry: (clientId, month, financialYear) =>
+    api.get(`/royalty-accounting/${clientId}/${month}${financialYear ? `?financialYear=${financialYear}` : ''}`),
+  saveEntry: (entryData) => api.post('/royalty-accounting', entryData),
+  updateEntry: (id, entryData) => api.put(`/royalty-accounting/${id}`, entryData),
+  deleteEntry: (clientId, month, financialYear) =>
+    api.delete(`/royalty-accounting/${clientId}/${month}${financialYear ? `?financialYear=${financialYear}` : ''}`),
+  getSummary: (financialYear) => {
     const params = new URLSearchParams();
-    if (month) params.append('month', month);
     if (financialYear) params.append('financialYear', financialYear);
-    return api.get(`/billing/reports/summary?${params.toString()}`);
+    return api.get(`/royalty-accounting/reports/summary?${params.toString()}`);
   },
   getClientReport: (clientId, financialYear) =>
-    api.get(`/billing/reports/client/${clientId}${financialYear ? `?financialYear=${financialYear}` : ''}`),
+    api.get(`/royalty-accounting/reports/client/${clientId}${financialYear ? `?financialYear=${financialYear}` : ''}`),
   getPreviousOutstanding: (clientId, month, financialYear) =>
-    api.get(`/billing/previous-outstanding/${clientId}/${month}${financialYear ? `?financialYear=${financialYear}` : ''}`),
+    api.get(`/royalty-accounting/previous-outstanding/${clientId}/${month}${financialYear ? `?financialYear=${financialYear}` : ''}`),
 };
 
 // Settings API

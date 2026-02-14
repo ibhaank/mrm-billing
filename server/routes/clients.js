@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Client = require('../models/Client');
-const BillingEntry = require('../models/BillingEntry');
+const RoyaltyAccounting = require('../models/RoyaltyAccounting');
 const { authenticateToken } = require('../middleware/auth');
 
 // Protect all client routes
@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
     }
     
     const clients = await Client.find(query);
-    clients.sort((a, b) => (parseInt(a.clientId?.split('-')[1], 10) || 0) - (parseInt(b.clientId?.split('-')[1], 10) || 0));
+    clients.sort((a, b) => (parseInt(a.clientId?.match(/(\d+)/)?.[1], 10) || 0) - (parseInt(b.clientId?.match(/(\d+)/)?.[1], 10) || 0));
     res.json(clients);
   } catch (error) {
     console.error('Error fetching clients:', error);
@@ -61,7 +61,7 @@ router.get('/:id', async (req, res) => {
 // @access  Public
 router.post('/', async (req, res) => {
   try {
-    const { clientId, name, type, clientType, fee, previousBalance, iprs, prs, isamra } = req.body;
+    const { clientId, name, type, clientType, fee, commissionRate, previousBalance, iprs, prs, isamra } = req.body;
 
     // Check if client ID already exists
     const existingClient = await Client.findOne({ clientId });
@@ -89,6 +89,7 @@ router.post('/', async (req, res) => {
       type: type || 'Other',
       clientType: clientType || '',
       fee: parseFloat(fee) || 0.10,
+      commissionRate: parseFloat(commissionRate) || 0,
       previousBalance: previousBalance || 0,
       iprs: iprs || false,
       prs: prs || false,
@@ -112,7 +113,7 @@ router.post('/', async (req, res) => {
 // @access  Public
 router.put('/:id', async (req, res) => {
   try {
-    const { name, type, clientType, fee, previousBalance, iprs, prs, isamra, isActive } = req.body;
+    const { name, type, clientType, fee, commissionRate, previousBalance, iprs, prs, isamra, isActive } = req.body;
 
     const client = await Client.findOne({ clientId: req.params.id });
 
@@ -121,10 +122,12 @@ router.put('/:id', async (req, res) => {
     }
 
     // Update fields
+    const oldName = client.name;
     if (name) client.name = name;
     if (type) client.type = type;
     if (clientType !== undefined) client.clientType = clientType;
     if (fee !== undefined) client.fee = parseFloat(fee);
+    if (commissionRate !== undefined) client.commissionRate = parseFloat(commissionRate);
     if (previousBalance !== undefined) client.previousBalance = previousBalance;
     if (iprs !== undefined) client.iprs = iprs;
     if (prs !== undefined) client.prs = prs;
@@ -132,6 +135,15 @@ router.put('/:id', async (req, res) => {
     if (isActive !== undefined) client.isActive = isActive;
     
     await client.save();
+
+    // Cascade name change to all RoyaltyAccounting entries
+    if (name && name !== oldName) {
+      await RoyaltyAccounting.updateMany(
+        { clientId: req.params.id },
+        { $set: { clientName: name } }
+      );
+    }
+
     res.json(client);
   } catch (error) {
     console.error('Error updating client:', error);
@@ -147,7 +159,7 @@ router.delete('/:id', async (req, res) => {
     const { permanent } = req.query;
     
     // Delete all billing entries for this client
-    await BillingEntry.deleteMany({ clientId: req.params.id });
+    await RoyaltyAccounting.deleteMany({ clientId: req.params.id });
 
     if (permanent === 'true') {
       // Permanent delete

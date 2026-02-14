@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
+const EyeIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+);
+
+const EyeOffIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+    <line x1="1" y1="1" x2="23" y2="23"/>
+  </svg>
+);
+
 const AuthModal = () => {
   // Detect ?resetToken= in the URL on mount
   const urlParams = new URLSearchParams(window.location.search);
@@ -12,6 +26,11 @@ const AuthModal = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [devResetUrl, setDevResetUrl] = useState('');
   const [resetToken] = useState(urlResetToken || '');
+  const [showPassword, setShowPassword] = useState({});
+
+  const togglePasswordVisibility = (field) => {
+    setShowPassword(prev => ({ ...prev, [field]: !prev[field] }));
+  };
 
   const { login, forgotPassword, resetPassword } = useAuth();
 
@@ -110,7 +129,12 @@ const AuthModal = () => {
             </div>
             <div className="form-group">
               <label>Password</label>
-              <input type="password" name="password" value={formData.password} onChange={handleChange} required placeholder="Enter your password" />
+              <div className="password-input-wrapper">
+                <input type={showPassword.password ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} required placeholder="Enter your password" />
+                <button type="button" className="password-toggle-btn" onClick={() => togglePasswordVisibility('password')} tabIndex={-1}>
+                  {showPassword.password ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              </div>
             </div>
 
             <MessageBanner />
@@ -185,11 +209,21 @@ const AuthModal = () => {
           <form onSubmit={handleReset} className="auth-form">
             <div className="form-group">
               <label>New Password</label>
-              <input type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} required placeholder="Min 8 characters" />
+              <div className="password-input-wrapper">
+                <input type={showPassword.newPassword ? 'text' : 'password'} name="newPassword" value={formData.newPassword} onChange={handleChange} required placeholder="Min 8 characters" />
+                <button type="button" className="password-toggle-btn" onClick={() => togglePasswordVisibility('newPassword')} tabIndex={-1}>
+                  {showPassword.newPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              </div>
             </div>
             <div className="form-group">
               <label>Confirm Password</label>
-              <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required placeholder="Re-enter new password" />
+              <div className="password-input-wrapper">
+                <input type={showPassword.confirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required placeholder="Re-enter new password" />
+                <button type="button" className="password-toggle-btn" onClick={() => togglePasswordVisibility('confirmPassword')} tabIndex={-1}>
+                  {showPassword.confirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              </div>
             </div>
 
             <MessageBanner />

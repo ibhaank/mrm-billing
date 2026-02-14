@@ -29,6 +29,12 @@ const clientSchema = new mongoose.Schema({
     max: 1,
     default: 0.10
   },
+  commissionRate: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100
+  },
   previousBalance: {
     type: Number,
     default: 0
@@ -63,11 +69,16 @@ const clientSchema = new mongoose.Schema({
 
 // Index for faster searches
 clientSchema.index({ name: 'text' });
-clientSchema.index({ clientId: 1 });
 
 // Pre-save middleware to update the updatedAt field
 clientSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
+  // Sync commissionRate and fee bidirectionally
+  if (this.isModified('commissionRate') && !this.isModified('fee')) {
+    this.fee = this.commissionRate / 100;
+  } else if (this.isModified('fee') && !this.isModified('commissionRate')) {
+    this.commissionRate = this.fee * 100;
+  }
   next();
 });
 

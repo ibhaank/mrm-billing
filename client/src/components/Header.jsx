@@ -12,7 +12,7 @@ function Header() {
       <div className="logo-row">
         <div className="logo-icon">MRM</div>
         <div>
-          <h1>MRM Billing Data Entry</h1>
+          <h1>MRM Royalty Commission Accounting</h1>
           <p className="header-subtitle">
             Music Rights Management • FY {financialYear.startYear}-{financialYear.endYear}
           </p>

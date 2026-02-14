@@ -1,140 +1,182 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useApp } from '../contexts/AppContext';
-import { billingApi } from '../services/api';
+import { royaltyApi } from '../services/api';
 
 const initialFormState = {
-  iprsAmt: '',
+  // Configurable Rates
+  commissionRate: '',
+  gstRate: '18',
+  royaltyType: 'IPRS + PRS',
+
+  // Royalty Amounts
+  iprsAmount: '',
   prsGbp: '',
   gbpToInrRate: '',
-  prsAmt: '',
-  soundExUsd: '',
-  usdToInrRate: '',
-  soundExAmt: '',
-  isamraAmt: '',
-  ascapUsd: '',
-  ascapAmt: '',
-  pplAmt: '',
-  iprsComis: '',
-  prsComis: '',
-  soundExComis: '',
-  isamraComis: '',
-  ascapComis: '',
-  pplComis: '',
-  totalCommission: 0,
-  gst: 0,
-  totalInvoice: 0,
-  previousOutstanding: '',
-  outstandingOperator: '+',
-  currentMonthOutstanding: '',
-  totalOutstanding: '',
-  iprsRemarks: '',
-  prsRemarks: '',
-  invoiceDate: new Date().toISOString().split('T')[0],
-  invoiceStatus: 'draft',
+  prsAmount: '',
+  soundExchangeAmount: '',
+  isamraAmount: '',
+  ascapAmount: '',
+  pplAmount: '',
+
+  // GST & Invoice Inputs
+  currentMonthGstBase: '',
+  previousOutstandingGstBase: '',
+
+  // Receipts & TDS
+  currentMonthReceipt: '',
+  currentMonthTds: '',
+  previousMonthReceipt: '',
+  previousMonthTds: '',
+
+  // Outstanding (auto-populated)
+  previousMonthOutstanding: '',
 };
 
 export function useBillingForm() {
   const { selectedClient, currentMonth, currentEntry, settings, saveEntry, deleteEntry } = useApp();
   const [formData, setFormData] = useState(initialFormState);
   const [isDirty, setIsDirty] = useState(false);
-
-  // Service fee from selected client
-  const serviceFee = selectedClient?.fee || 0;
-
-  // GST rate
-  const gstRate = settings.gstRate || 0.18;
+  const [isReadOnly, setIsReadOnly] = useState(false);
 
   // Load entry data when currentEntry, selectedClient, or currentMonth changes
   useEffect(() => {
     if (currentEntry) {
       setFormData({
-        iprsAmt: currentEntry.iprsAmt || '',
+        commissionRate: currentEntry.commissionRate ?? '',
+        gstRate: currentEntry.gstRate ?? '18',
+        royaltyType: currentEntry.royaltyType || 'IPRS + PRS',
+        iprsAmount: currentEntry.iprsAmount || '',
         prsGbp: currentEntry.prsGbp || '',
         gbpToInrRate: currentEntry.gbpToInrRate || '',
-        prsAmt: currentEntry.prsAmt || '',
-        soundExUsd: currentEntry.soundExUsd || '',
-        usdToInrRate: currentEntry.usdToInrRate || '',
-        soundExAmt: currentEntry.soundExAmt || '',
-        isamraAmt: currentEntry.isamraAmt || '',
-        ascapUsd: currentEntry.ascapUsd || '',
-        ascapAmt: currentEntry.ascapAmt || '',
-        pplAmt: currentEntry.pplAmt || '',
-        iprsComis: currentEntry.iprsComis || '',
-        prsComis: currentEntry.prsComis || '',
-        soundExComis: currentEntry.soundExComis || '',
-        isamraComis: currentEntry.isamraComis || '',
-        ascapComis: currentEntry.ascapComis || '',
-        pplComis: currentEntry.pplComis || '',
-        totalCommission: currentEntry.totalCommission || 0,
-        gst: currentEntry.gst || 0,
-        totalInvoice: currentEntry.totalInvoice || 0,
-        previousOutstanding: currentEntry.previousOutstanding || '',
-        outstandingOperator: currentEntry.outstandingOperator || '+',
-        currentMonthOutstanding: currentEntry.currentMonthOutstanding || '',
-        totalOutstanding: currentEntry.totalOutstanding || '',
-        iprsRemarks: currentEntry.iprsRemarks || '',
-        prsRemarks: currentEntry.prsRemarks || '',
-        invoiceDate: currentEntry.invoiceDate
-          ? new Date(currentEntry.invoiceDate).toISOString().split('T')[0]
-          : new Date().toISOString().split('T')[0],
-        invoiceStatus: currentEntry.invoiceStatus || 'draft',
+        prsAmount: currentEntry.prsAmount || '',
+        soundExchangeAmount: currentEntry.soundExchangeAmount || '',
+        isamraAmount: currentEntry.isamraAmount || '',
+        ascapAmount: currentEntry.ascapAmount || '',
+        pplAmount: currentEntry.pplAmount || '',
+        currentMonthGstBase: currentEntry.currentMonthGstBase || '',
+        previousOutstandingGstBase: currentEntry.previousOutstandingGstBase || '',
+        currentMonthReceipt: currentEntry.currentMonthReceipt || '',
+        currentMonthTds: currentEntry.currentMonthTds || '',
+        previousMonthReceipt: currentEntry.previousMonthReceipt || '',
+        previousMonthTds: currentEntry.previousMonthTds || '',
+        previousMonthOutstanding: currentEntry.previousMonthOutstanding || '',
       });
       setIsDirty(false);
+      setIsReadOnly(currentEntry.status === 'submitted');
     } else {
-      // Clear form when no entry exists for this client/month combination
-      setFormData(initialFormState);
+      // Auto-populate commissionRate from client
+      const clientRate = selectedClient?.commissionRate || (selectedClient?.fee ? selectedClient.fee * 100 : '');
+      setFormData({
+        ...initialFormState,
+        commissionRate: clientRate || '',
+      });
       setIsDirty(false);
+      setIsReadOnly(false);
 
-      // Auto-fetch previous month's total outstanding
+      // Auto-fetch previous month's total outstanding for carry-forward
       if (selectedClient && currentMonth) {
         const fy = settings.financialYear?.startYear;
-        billingApi.getPreviousOutstanding(selectedClient.clientId, currentMonth, fy)
+        royaltyApi.getPreviousOutstanding(selectedClient.clientId, currentMonth, fy)
           .then(res => {
             const prevOutstanding = res.data.totalOutstanding;
             if (prevOutstanding) {
-              setFormData(prev => ({ ...prev, previousOutstanding: prevOutstanding }));
+              setFormData(prev => ({ ...prev, previousMonthOutstanding: prevOutstanding }));
             }
           })
-          .catch(() => {}); // silently ignore if no previous entry
+          .catch(() => {});
       }
     }
   }, [currentEntry, selectedClient, currentMonth, settings.financialYear]);
 
-  // Calculate derived values
+  // Enable editing for submitted entries
+  const enableEdit = useCallback(() => {
+    setIsReadOnly(false);
+  }, []);
+
+  // Round to 2 decimal places (matches backend)
+  const r = (val) => Math.round((val + Number.EPSILON) * 100) / 100;
+
+  // Calculate all derived values (mirrors the backend business logic)
   const calculations = useMemo(() => {
-    const iprsAmt = parseFloat(formData.iprsAmt) || 0;
-    const prsAmt = parseFloat(formData.prsAmt) || 0;
-    const soundExAmt = parseFloat(formData.soundExAmt) || 0;
-    const isamraAmt = parseFloat(formData.isamraAmt) || 0;
-    const ascapAmt = parseFloat(formData.ascapAmt) || 0;
-    const pplAmt = parseFloat(formData.pplAmt) || 0;
+    const commissionRate = parseFloat(formData.commissionRate) || 0;
+    const gstRate = parseFloat(formData.gstRate) || 18;
+    const rate = commissionRate / 100;
+    const gstMultiplier = gstRate / 100;
 
-    // Commissions
-    const iprsComis = iprsAmt * serviceFee;
-    const prsComis = prsAmt * serviceFee;
-    const soundExComis = soundExAmt * serviceFee;
-    const isamraComis = isamraAmt * serviceFee;
-    const ascapComis = ascapAmt * serviceFee;
-    const pplComis = pplAmt * serviceFee;
+    const iprsAmount = parseFloat(formData.iprsAmount) || 0;
+    const prsAmount = parseFloat(formData.prsAmount) || 0;
+    const soundExchangeAmount = parseFloat(formData.soundExchangeAmount) || 0;
+    const isamraAmount = parseFloat(formData.isamraAmount) || 0;
+    const ascapAmount = parseFloat(formData.ascapAmount) || 0;
+    const pplAmount = parseFloat(formData.pplAmount) || 0;
 
-    // Totals
-    const totalCommission = iprsComis + prsComis + soundExComis + isamraComis + ascapComis + pplComis;
-    const gst = totalCommission * gstRate;
-    const totalInvoice = totalCommission + gst;
+    // 1. Commission Calculation
+    const iprsCommission = r(iprsAmount * rate);
+    const prsCommission = r(prsAmount * rate);
+    const soundExchangeCommission = r(soundExchangeAmount * rate);
+    const isamraCommission = r(isamraAmount * rate);
+    const ascapCommission = r(ascapAmount * rate);
+    const pplCommission = r(pplAmount * rate);
+    const totalCommission = r(iprsCommission + prsCommission + soundExchangeCommission +
+      isamraCommission + ascapCommission + pplCommission);
+
+    // 2. GST Calculation
+    const currentMonthGstBase = parseFloat(formData.currentMonthGstBase) || 0;
+    const previousOutstandingGstBase = parseFloat(formData.previousOutstandingGstBase) || 0;
+
+    const currentMonthGst = r(currentMonthGstBase * gstMultiplier);
+    const currentMonthInvoiceTotal = r(currentMonthGstBase + currentMonthGst);
+
+    const previousOutstandingGst = r(previousOutstandingGstBase * gstMultiplier);
+    const previousOutstandingInvoiceTotal = r(previousOutstandingGstBase + previousOutstandingGst);
+
+    // 3. Pending Amounts
+    const invoicePendingCurrentMonth = r(totalCommission - currentMonthGstBase);
+
+    const previousMonthOutstanding = parseFloat(formData.previousMonthOutstanding) || 0;
+    const previousInvoicePending = r(previousMonthOutstanding - previousOutstandingGstBase);
+
+    // 4. Monthly Outstanding
+    const currentMonthReceipt = parseFloat(formData.currentMonthReceipt) || 0;
+    const currentMonthTds = parseFloat(formData.currentMonthTds) || 0;
+
+    const monthlyOutstanding = r(
+      invoicePendingCurrentMonth +
+      currentMonthInvoiceTotal -
+      currentMonthReceipt -
+      currentMonthTds
+    );
+
+    // 5. Final Total Outstanding
+    const previousMonthReceipt = parseFloat(formData.previousMonthReceipt) || 0;
+    const previousMonthTds = parseFloat(formData.previousMonthTds) || 0;
+
+    const totalOutstanding = r(
+      previousInvoicePending +
+      previousOutstandingInvoiceTotal -
+      previousMonthReceipt -
+      previousMonthTds +
+      monthlyOutstanding
+    );
 
     return {
-      iprsComis,
-      prsComis,
-      soundExComis,
-      isamraComis,
-      ascapComis,
-      pplComis,
+      iprsCommission,
+      prsCommission,
+      soundExchangeCommission,
+      isamraCommission,
+      ascapCommission,
+      pplCommission,
       totalCommission,
-      gst,
-      totalInvoice,
+      currentMonthGst,
+      currentMonthInvoiceTotal,
+      previousOutstandingGst,
+      previousOutstandingInvoiceTotal,
+      invoicePendingCurrentMonth,
+      previousInvoicePending,
+      monthlyOutstanding,
+      totalOutstanding,
     };
-  }, [formData.iprsAmt, formData.prsAmt, formData.soundExAmt, formData.isamraAmt,
-      formData.ascapAmt, formData.pplAmt, serviceFee, gstRate]);
+  }, [formData]);
 
   // Update field
   const updateField = useCallback((field, value) => {
@@ -142,28 +184,30 @@ export function useBillingForm() {
     setIsDirty(true);
   }, []);
 
-  // Handle input change - auto-calculate INR when currency or rate changes
+  // Handle input change with linked PRS fields
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData(prev => {
       const next = { ...prev, [name]: value };
 
+      // Linked PRS fields: any 2 of (prsGbp, gbpToInrRate, prsAmount) determine the 3rd
       if (name === 'prsGbp' || name === 'gbpToInrRate') {
+        const gbp = parseFloat(name === 'prsGbp' ? value : next.prsGbp) || 0;
+        const rate = parseFloat(name === 'gbpToInrRate' ? value : next.gbpToInrRate) || 0;
+        if (gbp && rate) {
+          next.prsAmount = Math.round((gbp * rate + Number.EPSILON) * 100) / 100;
+        }
+      } else if (name === 'prsAmount') {
         const gbp = parseFloat(next.prsGbp) || 0;
         const rate = parseFloat(next.gbpToInrRate) || 0;
-        next.prsAmt = gbp && rate ? (gbp * rate).toFixed(2) : prev.prsAmt;
-      }
-
-      if (name === 'soundExUsd' || name === 'usdToInrRate') {
-        const usd = parseFloat(next.soundExUsd) || 0;
-        const rate = parseFloat(next.usdToInrRate) || 0;
-        next.soundExAmt = usd && rate ? (usd * rate).toFixed(2) : prev.soundExAmt;
-      }
-
-      if (name === 'ascapUsd' || name === 'usdToInrRate') {
-        const usd = parseFloat(next.ascapUsd) || 0;
-        const rate = parseFloat(next.usdToInrRate) || 0;
-        next.ascapAmt = usd && rate ? (usd * rate).toFixed(2) : prev.ascapAmt;
+        const inr = parseFloat(value) || 0;
+        if (gbp && inr && !rate) {
+          next.gbpToInrRate = Math.round((inr / gbp + Number.EPSILON) * 100) / 100;
+        } else if (rate && inr && !gbp) {
+          next.prsGbp = Math.round((inr / rate + Number.EPSILON) * 100) / 100;
+        } else if (gbp && inr) {
+          next.gbpToInrRate = Math.round((inr / gbp + Number.EPSILON) * 100) / 100;
+        }
       }
 
       return next;
@@ -175,48 +219,51 @@ export function useBillingForm() {
   const clearForm = useCallback(() => {
     setFormData(initialFormState);
     setIsDirty(false);
+    setIsReadOnly(false);
   }, []);
+
+  // Build entry data from form
+  const buildEntryData = useCallback(() => ({
+    clientId: selectedClient.clientId,
+    month: currentMonth,
+    commissionRate: parseFloat(formData.commissionRate) || 0,
+    gstRate: parseFloat(formData.gstRate) || 18,
+    royaltyType: formData.royaltyType,
+    iprsAmount: parseFloat(formData.iprsAmount) || 0,
+    prsGbp: parseFloat(formData.prsGbp) || 0,
+    gbpToInrRate: parseFloat(formData.gbpToInrRate) || 0,
+    prsAmount: parseFloat(formData.prsAmount) || 0,
+    soundExchangeAmount: parseFloat(formData.soundExchangeAmount) || 0,
+    isamraAmount: parseFloat(formData.isamraAmount) || 0,
+    ascapAmount: parseFloat(formData.ascapAmount) || 0,
+    pplAmount: parseFloat(formData.pplAmount) || 0,
+    currentMonthGstBase: parseFloat(formData.currentMonthGstBase) || 0,
+    previousOutstandingGstBase: parseFloat(formData.previousOutstandingGstBase) || 0,
+    currentMonthReceipt: parseFloat(formData.currentMonthReceipt) || 0,
+    currentMonthTds: parseFloat(formData.currentMonthTds) || 0,
+    previousMonthReceipt: parseFloat(formData.previousMonthReceipt) || 0,
+    previousMonthTds: parseFloat(formData.previousMonthTds) || 0,
+    previousMonthOutstanding: parseFloat(formData.previousMonthOutstanding) || 0,
+  }), [selectedClient, currentMonth, formData]);
 
   // Save as draft
   const handleSaveAsDraft = useCallback(async () => {
-    if (!selectedClient) {
-      throw new Error('Please select a client first');
-    }
-
-    const entryData = {
-      clientId: selectedClient.clientId,
-      month: currentMonth,
-      ...formData,
-      ...calculations,
-    };
-
-    await saveEntry(entryData, 'draft');
+    if (!selectedClient) throw new Error('Please select a client first');
+    await saveEntry(buildEntryData(), 'draft');
     setIsDirty(false);
-  }, [selectedClient, currentMonth, formData, calculations, saveEntry]);
+  }, [selectedClient, buildEntryData, saveEntry]);
 
   // Submit entry
   const handleSubmit = useCallback(async () => {
-    if (!selectedClient) {
-      throw new Error('Please select a client first');
-    }
-
-    const entryData = {
-      clientId: selectedClient.clientId,
-      month: currentMonth,
-      ...formData,
-      ...calculations,
-    };
-
-    await saveEntry(entryData, 'submitted');
+    if (!selectedClient) throw new Error('Please select a client first');
+    await saveEntry(buildEntryData(), 'submitted');
     setIsDirty(false);
-  }, [selectedClient, currentMonth, formData, calculations, saveEntry]);
+    setIsReadOnly(true);
+  }, [selectedClient, buildEntryData, saveEntry]);
 
   // Delete entry
   const handleDelete = useCallback(async () => {
-    if (!selectedClient) {
-      throw new Error('Please select a client first');
-    }
-
+    if (!selectedClient) throw new Error('Please select a client first');
     await deleteEntry(selectedClient.clientId, currentMonth);
     clearForm();
   }, [selectedClient, currentMonth, deleteEntry, clearForm]);
@@ -225,14 +272,15 @@ export function useBillingForm() {
     formData,
     calculations,
     isDirty,
-    serviceFee,
     handleInputChange,
     updateField,
     clearForm,
     handleSaveAsDraft,
     handleSubmit,
     handleDelete,
-    status: currentEntry?.status || currentEntry?.invoiceStatus || null,
+    status: currentEntry?.status || null,
+    isReadOnly,
+    enableEdit,
   };
 }
 
